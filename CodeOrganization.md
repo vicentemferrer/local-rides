@@ -1,3 +1,106 @@
+
+### **1. Directory / File Structure**
+
+The app follows a modular, feature-driven layout using **Expo Router**:
+
+```
+app/
+├── _layout.tsx              # Root layout, wraps app in AuthProvider
+├── index.tsx                # Entry point, redirects based on auth state
+├── login.tsx                # Login screen
+├── signup.tsx               # Signup screen
+├── forgot-password.tsx      # Password reset
+├── verification.tsx         # Phone/email verification
+└── (tabs)/                  # Tab group (main app after login)
+    ├── _layout.tsx          # Tab navigator layout
+    ├── home/                # Home feature stack
+    │   ├── _layout.tsx      # Home stack navigator
+    │   ├── index.tsx        # Home screen
+    │   ├── booking.tsx
+    │   ├── ride-tracking.tsx
+    │   ├── destination.tsx
+    │   └── payment.tsx
+    ├── activity/            # Activity / trips stack
+    │   ├── _layout.tsx
+    │   ├── index.tsx        # Trips list
+    │   ├── trip-detail.tsx
+    │   └── receipt.tsx
+    └── account/             # Account / profile stack
+        ├── _layout.tsx
+        ├── index.tsx        # Account main
+        ├── profile.tsx
+        ├── settings.tsx
+        ├── payment-methods.tsx
+        ├── notifications.tsx
+        └── help.tsx
+```
+
+**Shared types and context:**
+
+```
+src/
+├── shared/types/navigation.ts   # Common interfaces (e.g., User)
+└── core/context/AuthContext.tsx # AuthProvider and useAuth hook
+```
+
+---
+
+### **2. Auth Management**
+
+* `AuthContext` holds:
+
+  * `user` state
+  * `isAuthenticated` & `isLoading`
+  * Actions: `login`, `signup`, `logout`, `updateProfile`
+* Stores user data in **AsyncStorage**.
+* Wraps the app in **AuthProvider** at root layout (`app/_layout.tsx`) so all children can access auth state.
+
+---
+
+### **3. Routing / Navigation**
+
+* Uses **Expo Router** with a nested layout system:
+
+  * Root: `_layout.tsx` → wraps with AuthProvider
+  * `(auth)/_layout.tsx` → login/signup flow
+  * `(tabs)/_layout.tsx` → main tab navigator
+  * Stack navigators inside each tab (e.g., `home/_layout.tsx`)
+* `index.tsx` decides which route to redirect based on `isAuthenticated`.
+
+---
+
+### **4. UI Components**
+
+* Each screen is self-contained (`login.tsx`, `home/index.tsx`, etc.).
+* Uses **SafeAreaView**, **StyleSheet**, and functional React components.
+* Minimal global state outside AuthContext—screen state is local.
+
+---
+
+### **5. How To Add to The code**
+
+1. **Add New Features / Tabs:**
+
+   * Create a new folder under `(tabs)/` with its own `_layout.tsx` and screens.
+2. **Add Screens to Existing Stack:**
+
+   * Add a `.tsx` file inside the stack folder (`home/`, `activity/`, `account/`).
+   * Update `_layout.tsx` for the stack if needed.
+3. **Add Shared Types or Utils:**
+
+   * Put new types in `src/shared/types/`.
+   * Shared functions can go in `src/core/utils/`.
+4. **Add Context / State Management:**
+
+   * Add new contexts in `src/core/context/`.
+   * Wrap root layout or specific layouts if needed.
+5. **Add API Integration:**
+
+   * Mock data can be replaced by real API calls in AuthContext or screen components.
+   * AsyncStorage calls can be extended to persist new data types.
+
+
+
 LocalRides/
 ├── App.js                                    # Main entry point
 ├── app.json                                  # Expo configuration
