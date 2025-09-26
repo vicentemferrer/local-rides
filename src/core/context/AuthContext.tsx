@@ -96,17 +96,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (loginForm: LoginForm): Promise<void> => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginForm.email,
+        password: loginForm.password,
+      });
 
-    const mockUser = MOCK_USER.find(u => u.email === loginForm.email);
-    if (!mockUser || loginForm.password.length < 6) {
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (data.user) {
+        await loadUserFromSupabase(data.user);
+      }
+    } catch (error) {
       setIsLoading(false);
-      throw new Error('Invalid email or password');
+      throw error;
     }
-
-    setUser(mockUser);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(mockUser));
-    setIsLoading(false);
   };
 
   const signupRider = async (userRiderData: User): Promise<void> => {
