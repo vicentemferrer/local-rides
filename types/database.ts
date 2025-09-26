@@ -149,6 +149,211 @@ export type Database = {
         }
         Relationships: []
       }
+      drivers: {
+        Row: {
+          id: string
+          first_name: string
+          last_name: string
+          email: string
+          phone_number: string
+          user_type: string
+          password_hash: string | null
+          profile_picture: string | null
+          is_active: boolean
+          email_verified: boolean
+          phone_verified: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          first_name: string
+          last_name: string
+          email: string
+          phone_number: string
+          user_type?: string
+          password_hash?: string | null
+          profile_picture?: string | null
+          is_active?: boolean
+          email_verified?: boolean
+          phone_verified?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          first_name?: string
+          last_name?: string
+          email?: string
+          phone_number?: string
+          user_type?: string
+          password_hash?: string | null
+          profile_picture?: string | null
+          is_active?: boolean
+          email_verified?: boolean
+          phone_verified?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drivers_plates_user_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "drivers_plates"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "vehicles_driver_id_fkey"
+            columns: ["id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["driver_id"]
+          },
+          {
+            foreignKeyName: "driver_documents_driver_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "driver_documents"
+            referencedColumns: ["driver_id"]
+          }
+        ]
+      }
+      drivers_plates: {
+        Row: {
+          user_id: string
+          license_number: string
+          license_expiry: string
+          license_state: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          license_number: string
+          license_expiry: string
+          license_state: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          license_number?: string
+          license_expiry?: string
+          license_state?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drivers_plates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      vehicles: {
+        Row: {
+          id: string
+          driver_id: string
+          make: string
+          model: string
+          year: string
+          color: string
+          license_plate: string
+          vehicle_type: string
+          seating_capacity: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          driver_id: string
+          make: string
+          model: string
+          year: string
+          color: string
+          license_plate: string
+          vehicle_type?: string
+          seating_capacity?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          driver_id?: string
+          make?: string
+          model?: string
+          year?: string
+          color?: string
+          license_plate?: string
+          vehicle_type?: string
+          seating_capacity?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicles_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      driver_documents: {
+        Row: {
+          driver_id: string
+          license_status: string
+          insurance_status: string
+          registration_status: string
+          license_url: string | null
+          insurance_url: string | null
+          registration_url: string | null
+          uploaded_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          driver_id: string
+          license_status?: string
+          insurance_status?: string
+          registration_status?: string
+          license_url?: string | null
+          insurance_url?: string | null
+          registration_url?: string | null
+          uploaded_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          driver_id?: string
+          license_status?: string
+          insurance_status?: string
+          registration_status?: string
+          license_url?: string | null
+          insurance_url?: string | null
+          registration_url?: string | null
+          uploaded_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_documents_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: true
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
