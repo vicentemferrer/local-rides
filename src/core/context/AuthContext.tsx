@@ -48,11 +48,44 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => subscription.unsubscribe();
   }, []);
 
-  const loadStoredUser = async () => {
+  const loadUserFromSupabase = async (supabaseUser: any) => {
     try {
-      const storedUser = await AsyncStorage.getItem(STORAGE_KEY);
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+      // Fetch user data from our drivers table
+      const { data: driverData, error } = await supabase
+        .from('drivers')
+        .select('*')
+        .eq('id', supabaseUser.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading user from Supabase:', error);
+        setIsLoading(false);
+        return;
+      }
+
+      if (driverData) {
+        // Convert Supabase user data to our User interface
+        const userData: User = {
+          id: driverData.id,
+          firstName: driverData.first_name,
+          lastName: driverData.last_name,
+          email: driverData.email,
+          phoneNumber: driverData.phone_number,
+          userType: driverData.user_type as UserType,
+        };
+        setUser(userData);
+      } else {
+        // User exists in Supabase Auth but not in our drivers table
+        // This might be a rider or incomplete registration
+        const userData: User = {
+          id: supabaseUser.id,
+          firstName: supabaseUser.user_metadata?.first_name || '',
+          lastName: supabaseUser.user_metadata?.last_name || '',
+          email: supabaseUser.email || '',
+          phoneNumber: supabaseUser.user_metadata?.phone_number || '',
+          userType: 'rider', // Default to rider if not in drivers table
+        };
+        setUser(userData);
       }
     } catch (error) {
       console.error('Error loading stored user:', error);
