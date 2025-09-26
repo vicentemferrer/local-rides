@@ -9,10 +9,9 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (loginForm: LoginForm) => Promise<void>;
-  signupRider: (userRiderData: User) => Promise<void>;
   signupDriver: (userDriverData: DriverRegistrationForm) => Promise<void>;
   logout: () => Promise<void>;
-  updateProfile: (userData: Partial<User>) => void;
+  updateProfile: (userData: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -76,16 +75,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(userData);
       } else {
         // User exists in Supabase Auth but not in our drivers table
-        // This might be a rider or incomplete registration
-        const userData: User = {
-          id: supabaseUser.id,
-          firstName: supabaseUser.user_metadata?.first_name || '',
-          lastName: supabaseUser.user_metadata?.last_name || '',
-          email: supabaseUser.email || '',
-          phoneNumber: supabaseUser.user_metadata?.phone_number || '',
-          userType: 'rider', // Default to rider if not in drivers table
-        };
-        setUser(userData);
+        // This means incomplete driver registration
+        setUser(null);
       }
     } catch (error) {
       console.error('Error loading stored user:', error);
@@ -246,7 +237,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     isAuthenticated: !!user,
     isLoading,
     login,
-    signupRider,
     signupDriver,
     logout,
     updateProfile,
