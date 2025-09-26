@@ -117,16 +117,52 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const signupRider = async (userRiderData: User): Promise<void> => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Create user in Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email: userRiderData.email,
+        password: userRiderData.password || 'temp_password_123',
+        options: {
+          data: {
+            first_name: userRiderData.firstName,
+            last_name: userRiderData.lastName,
+            phone_number: userRiderData.phoneNumber,
+            user_type: 'rider',
+          },
+        },
+      });
 
-    const newUser: User = {
-      ...userRiderData,
-      userType: 'rider',
-    };
+      if (error) {
+        throw new Error(error.message);
+      }
 
-    setUser(newUser);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
-    setIsLoading(false);
+      if (data.user) {
+        // Create rider record in drivers table (with user_type = 'rider')
+        const { error: insertError } = await supabase
+          .from('drivers')
+          .insert({
+            id: data.user.id,
+            first_name: userRiderData.firstName,
+            last_name: userRiderData.lastName,
+            email: userRiderData.email,
+            phone_number: userRiderData.phoneNumber,
+            user_type: 'rider',
+            is_active: true,
+            email_verified: false,
+            phone_verified: false,
+          });
+
+        if (insertError) {
+          console.error('Error creating rider record:', insertError);
+          // Don't throw here as the auth user was created successfully
+        }
+
+        await loadUserFromSupabase(data.user);
+      }
+    } catch (error) {
+      setIsLoading(false);
+      throw error;
+    }
   };
 
   const signupDriver = async (userDiverData: DriverRegistrationForm): Promise<void> => {
