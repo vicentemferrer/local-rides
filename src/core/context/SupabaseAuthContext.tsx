@@ -3,12 +3,12 @@ import { LoginForm } from '@/src/Styles/login';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 
-
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (loginForm: LoginForm) => Promise<void>;
+  signupRider: (userRiderData: User) => Promise<void>;
   signupDriver: (userDriverData: DriverRegistrationForm) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (userData: Partial<User>) => Promise<void>;
@@ -16,9 +16,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// No more mock data - using Supabase!
-
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const SupabaseAuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -75,8 +73,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(userData);
       } else {
         // User exists in Supabase Auth but not in our drivers table
-        // This means incomplete driver registration
-        setUser(null);
+        // This might be a rider or incomplete registration
+        const userData: User = {
+          id: supabaseUser.id,
+          firstName: supabaseUser.user_metadata?.first_name || '',
+          lastName: supabaseUser.user_metadata?.last_name || '',
+          email: supabaseUser.email || '',
+          phoneNumber: supabaseUser.user_metadata?.phone_number || '',
+          userType: 'rider', // Default to rider if not in drivers table
+        };
+        setUser(userData);
       }
     } catch (error) {
       console.error('Error loading user:', error);
@@ -106,6 +112,55 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const signupRider = async (userRiderData: User): Promise<void> => {
+    setIsLoading(true);
+    try {
+      // Create user in Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email: userRiderData.email,
+        password: userRiderData.password || 'temp_password_123',
+        options: {
+          data: {
+            first_name: userRiderData.firstName,
+            last_name: userRiderData.lastName,
+            phone_number: userRiderData.phoneNumber,
+            user_type: 'rider',
+          },
+        },
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (data.user) {
+        // Create rider record in drivers table (with user_type = 'rider')
+        const { error: insertError } = await supabase
+          .from('drivers')
+          .insert({
+            id: data.user.id,
+            first_name: userRiderData.firstName,
+            last_name: userRiderData.lastName,
+            email: userRiderData.email,
+            phone_number: userRiderData.phoneNumber,
+            user_type: 'rider',
+            is_active: true,
+            email_verified: false,
+            phone_verified: false,
+          });
+
+        if (insertError) {
+          console.error('Error creating rider record:', insertError);
+          // Don't throw here as the auth user was created successfully
+        }
+
+        await loadUserFromSupabase(data.user);
+      }
+    } catch (error) {
+      setIsLoading(false);
+      throw error;
+    }
+  };
 
   const signupDriver = async (userDriverData: DriverRegistrationForm): Promise<void> => {
     setIsLoading(true);
@@ -208,7 +263,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const updateProfile = async (userData: Partial<User>): Promise<void> => {
-    if (!user || !user.id) {
+    if (!user) {
       throw new Error('No user logged in');
     }
 
@@ -237,6 +292,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     isAuthenticated: !!user,
     isLoading,
     login,
+    signupRider,
     signupDriver,
     logout,
     updateProfile,
@@ -249,10 +305,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 };
 
-export const useAuth = (): AuthContextType => {
+export const useSupabaseAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useSupabaseAuth must be used within a SupabaseAuthProvider');
   }
   return context;
 };
+
