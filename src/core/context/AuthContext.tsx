@@ -115,19 +115,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const signupRider = async (userRiderData: User): Promise<void> => {
+
+  const signupDriver = async (userDriverData: DriverRegistrationForm): Promise<void> => {
     setIsLoading(true);
     try {
       // Create user in Supabase Auth
       const { data, error } = await supabase.auth.signUp({
-        email: userRiderData.email,
-        password: userRiderData.password || 'temp_password_123',
+        email: userDriverData.personalInfo.email,
+        password: userDriverData.personalInfo.password || 'temp_password_123',
         options: {
           data: {
-            first_name: userRiderData.firstName,
-            last_name: userRiderData.lastName,
-            phone_number: userRiderData.phoneNumber,
-            user_type: 'rider',
+            first_name: userDriverData.personalInfo.firstName,
+            last_name: userDriverData.personalInfo.lastName,
+            phone_number: userDriverData.personalInfo.phoneNumber,
+            user_type: 'driver',
           },
         },
       });
@@ -137,25 +138,63 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       if (data.user) {
-        // Create rider record in drivers table (with user_type = 'rider')
-        const { error: insertError } = await supabase
+        // Create driver record in drivers table
+        const { error: driverError } = await supabase
           .from('drivers')
           .insert({
             id: data.user.id,
-            first_name: userRiderData.firstName,
-            last_name: userRiderData.lastName,
-            email: userRiderData.email,
-            phone_number: userRiderData.phoneNumber,
-            user_type: 'rider',
+            first_name: userDriverData.personalInfo.firstName,
+            last_name: userDriverData.personalInfo.lastName,
+            email: userDriverData.personalInfo.email,
+            phone_number: userDriverData.personalInfo.phoneNumber,
+            user_type: 'driver',
             is_active: true,
             email_verified: false,
             phone_verified: false,
           });
 
-        if (insertError) {
-          console.error('Error creating rider record:', insertError);
-          // Don't throw here as the auth user was created successfully
-        }
+        if (driverError) throw driverError;
+
+        // Create license record
+        const { error: licenseError } = await supabase
+          .from('drivers_plates')
+          .insert({
+            user_id: data.user.id,
+            license_number: userDriverData.licenseInfo.licenseNumber,
+            license_expiry: userDriverData.licenseInfo.expirationDate,
+            license_state: userDriverData.licenseInfo.state,
+          });
+
+        if (licenseError) throw licenseError;
+
+        // Create vehicle record
+        const { error: vehicleError } = await supabase
+          .from('vehicles')
+          .insert({
+            driver_id: data.user.id,
+            make: userDriverData.vehicleInfo.make,
+            model: userDriverData.vehicleInfo.model,
+            year: userDriverData.vehicleInfo.year,
+            color: userDriverData.vehicleInfo.color,
+            license_plate: userDriverData.vehicleInfo.licensePlate,
+            vehicle_type: 'car',
+            seating_capacity: 4,
+            is_active: true,
+          });
+
+        if (vehicleError) throw vehicleError;
+
+        // Create document status record
+        const { error: documentError } = await supabase
+          .from('driver_documents')
+          .insert({
+            driver_id: data.user.id,
+            license_status: userDriverData.documents.license,
+            insurance_status: userDriverData.documents.insurance,
+            registration_status: userDriverData.documents.registration,
+          });
+
+        if (documentError) throw documentError;
 
         await loadUserFromSupabase(data.user);
       }
