@@ -17,73 +17,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const STORAGE_KEY = 'user_data';
-
-// Mock User (Driver)
-const MOCK_USER: User[] = [
-  {
-    id: 'user_002',
-    firstName: 'Jane',
-    lastName: 'Smith',
-    email: 'jane.smith@example.com',
-    phoneNumber: '+15557654321',
-    userType: 'driver',
-    password: 'password123', // For mock login only
-  },
-  {
-    id: 'user_002',
-    firstName: 'Bob',
-    lastName: 'Smith',
-    email: 'bob.smith@example.com',
-    phoneNumber: '+15557654321',
-    userType: 'driver',
-    password: 'password123', // For mock login only
-  },
-];
-
-// Mock DriverRegistrationForm
-const MOCK_DRIVER: DriverRegistrationForm[] = [
-  {
-    personalInfo: MOCK_USER[0],
-    licenseInfo: {
-      licenseNumber: 'D1234567890',
-      expirationDate: '12/27',
-      state: 'CA',
-    },
-    vehicleInfo: {
-      make: 'Toyota',
-      model: 'Camry',
-      year: '2020',
-      color: 'Blue',
-      licensePlate: 'ABC1234',
-    },
-    documents: {
-      license: 'uploaded',
-      insurance: 'uploaded',
-      registration: 'uploaded',
-    },
-  },
-  {
-    personalInfo: MOCK_USER[1],
-    licenseInfo: {
-      licenseNumber: 'D0987654321',
-      expirationDate: '11/26',
-      state: 'NY',
-    },
-    vehicleInfo: {
-      make: 'Honda',
-      model: 'Civic',
-      year: '2019',
-      color: 'Red',
-      licensePlate: 'XYZ5678',
-    },
-    documents: {
-      license: 'uploaded',
-      insurance: 'uploaded',
-      registration: 'uploaded',
-    },
-  },
-];
+// No more mock data - using Supabase!
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
