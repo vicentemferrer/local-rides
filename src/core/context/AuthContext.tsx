@@ -1,16 +1,16 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { User } from '../../shared/types/navigation';
+import { DriverRegistrationForm, User, UserType } from '@/src/Styles/drivers';
+import { LoginForm } from '@/src/Styles/login';
+
 
 interface AuthContextType {
-  // State
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-
-  // Actions
-  login: (email: string, password: string) => Promise<void>;
-  signup: (userData: Omit<User, 'id'>) => Promise<void>;
+  login: (loginForm: LoginForm) => Promise<void>;
+  signupRider: (userRiderData: User) => Promise<void>;
+  signupDriver: (userDriverData: DriverRegistrationForm) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (userData: Partial<User>) => void;
 }
@@ -19,102 +19,136 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 const STORAGE_KEY = 'user_data';
 
-// Mock user data for testing
-const MOCK_USERS = [
+// Mock User (Driver)
+const MOCK_USER: User[] = [
   {
-    id: '1',
-    email: 'test@localrides.com',
-    firstName: 'John',
-    lastName: 'Doe',
-    phoneNumber: '+1234567890',
-    profilePicture: undefined,
-  },
-  {
-    id: '2',
-    email: 'demo@localrides.com',
+    id: 'user_002',
     firstName: 'Jane',
     lastName: 'Smith',
-    phoneNumber: '+0987654321',
-    profilePicture: undefined,
-  }
+    email: 'jane.smith@example.com',
+    phoneNumber: '+15557654321',
+    userType: 'driver',
+    password: 'password123', // For mock login only
+  },
+  {
+    id: 'user_002',
+    firstName: 'Bob',
+    lastName: 'Smith',
+    email: 'bob.smith@example.com',
+    phoneNumber: '+15557654321',
+    userType: 'driver',
+    password: 'password123', // For mock login only
+  },
+];
+
+// Mock DriverRegistrationForm
+const MOCK_DRIVER: DriverRegistrationForm[] = [
+  {
+    personalInfo: MOCK_USER[0],
+    licenseInfo: {
+      licenseNumber: 'D1234567890',
+      expirationDate: '12/27',
+      state: 'CA',
+    },
+    vehicleInfo: {
+      make: 'Toyota',
+      model: 'Camry',
+      year: '2020',
+      color: 'Blue',
+      licensePlate: 'ABC1234',
+    },
+    documents: {
+      license: 'uploaded',
+      insurance: 'uploaded',
+      registration: 'uploaded',
+    },
+  },
+  {
+    personalInfo: MOCK_USER[1],
+    licenseInfo: {
+      licenseNumber: 'D0987654321',
+      expirationDate: '11/26',
+      state: 'NY',
+    },
+    vehicleInfo: {
+      make: 'Honda',
+      model: 'Civic',
+      year: '2019',
+      color: 'Red',
+      licensePlate: 'XYZ5678',
+    },
+    documents: {
+      license: 'uploaded',
+      insurance: 'uploaded',
+      registration: 'uploaded',
+    },
+  },
 ];
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // Start with true for initial load
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize auth state
   useEffect(() => {
-    async function loadStoredUser() {
-      try {
-        const storedUser = await AsyncStorage.getItem(STORAGE_KEY);
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-        }
-      } catch (error) {
-        console.error('Error loading stored user:', error);
-      } finally {
-        setIsLoading(false); // Mark loading as complete whether successful or not
-      }
-    }
     loadStoredUser();
   }, []);
 
-  const login = async (email: string, password: string): Promise<void> => {
-    setIsLoading(true);
+  const loadStoredUser = async () => {
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Simple mock authentication
-      const mockUser = MOCK_USERS.find(u => u.email === email);
-
-      if (!mockUser || password.length < 6) {
-        throw new Error('Invalid email or password');
+      const storedUser = await AsyncStorage.getItem(STORAGE_KEY);
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
       }
-
-      setUser(mockUser);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(mockUser));
+    } catch (error) {
+      console.error('Error loading stored user:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const signup = async (userData: Omit<User, 'id'>): Promise<void> => {
+  const login = async (loginForm: LoginForm): Promise<void> => {
     setIsLoading(true);
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Check if user already exists
-      const existingUser = MOCK_USERS.find(u => u.email === userData.email);
-      if (existingUser) {
-        throw new Error('User already exists with this email');
-      }
-
-      const newUser: User = {
-        ...userData,
-        id: Math.random().toString(36).substr(2, 9),
-      };
-
-      setUser(newUser);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
-    } finally {
+    const mockUser = MOCK_USER.find(u => u.email === loginForm.email);
+    if (!mockUser || loginForm.password.length < 6) {
       setIsLoading(false);
+      throw new Error('Invalid email or password');
     }
+
+    setUser(mockUser);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(mockUser));
+    setIsLoading(false);
+  };
+
+  const signupRider = async (userRiderData: User): Promise<void> => {
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const newUser: User = {
+      ...userRiderData,
+      userType: 'rider',
+    };
+
+    setUser(newUser);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
+    setIsLoading(false);
+  };
+
+  const signupDriver = async (userDiverData: DriverRegistrationForm): Promise<void> => {
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 2000)); // Longer for "document verification"
+
+    const newDriverUser: DriverRegistrationForm = userDiverData;
+
+    setUser(newDriverUser.personalInfo);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(userDiverData));
+    setIsLoading(false);
   };
 
   const logout = async (): Promise<void> => {
-    setIsLoading(true);
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      setUser(null);
-      await AsyncStorage.removeItem(STORAGE_KEY);
-    } finally {
-      setIsLoading(false);
-    }
+    setUser(null);
+    await AsyncStorage.removeItem(STORAGE_KEY);
   };
 
   const updateProfile = async (userData: Partial<User>): Promise<void> => {
@@ -127,10 +161,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const value: AuthContextType = {
     user,
-    isAuthenticated: !!user?.id, // This will be correct once loading completes
+    isAuthenticated: !!user,
     isLoading,
     login,
-    signup,
+    signupRider,
+    signupDriver,
     logout,
     updateProfile,
   };

@@ -11,21 +11,29 @@ import {
 import { Link, router } from 'expo-router';
 import { useAuth } from '../src/core/context/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LoginForm } from '@/src/Styles/login';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('test@localrides.com'); // Pre-filled for testing
-  const [password, setPassword] = useState('password123');
+  const [formData, setFormData] = useState<LoginForm>({
+    email: 'jane.smith@example.com',   // Pre-filled for testing
+    password: 'password123',
+  });
+  
   const { login, isLoading } = useAuth();
 
   const handleLogin = async () => {
     try {
-      await login(email, password);
+      await login(formData);
       router.replace('/(app)/(tabs)/home');
     } catch (error: any) {
       Alert.alert('Login Failed', error.message);
     }
   };
 
+  const updateFormData = <K extends keyof LoginForm>(field: K, value: LoginForm[K]) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+  
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -36,8 +44,8 @@ export default function LoginScreen() {
           <TextInput
             style={styles.input}
             placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
+            value={formData.email}
+            onChangeText={(text) => updateFormData('email', text)}
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
@@ -46,8 +54,8 @@ export default function LoginScreen() {
           <TextInput
             style={styles.input}
             placeholder="Password"
-            value={password}
-            onChangeText={setPassword}
+            value={formData.password}
+            onChangeText={(text) => updateFormData('password', text)}
             secureTextEntry
             autoComplete="password"
           />
@@ -63,8 +71,8 @@ export default function LoginScreen() {
               <Text style={styles.buttonText}>Sign In</Text>
             )}
           </TouchableOpacity>
-
-          <Link href="/forgot-password" asChild>
+            {/* "/forgot-password"  */}
+          <Link href="/" asChild>
             <TouchableOpacity style={styles.linkButton}>
               <Text style={styles.linkText}>Forgot Password?</Text>
             </TouchableOpacity>
@@ -73,7 +81,7 @@ export default function LoginScreen() {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Don't have an account? </Text>
-          <Link href="/signup" asChild>
+          <Link href="/user-type-selection" asChild>
             <TouchableOpacity>
               <Text style={styles.linkText}>Sign Up</Text>
             </TouchableOpacity>
