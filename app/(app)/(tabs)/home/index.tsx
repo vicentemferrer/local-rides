@@ -11,7 +11,11 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>Hello, {user?.firstName}!</Text>
+        <Text style={styles.greeting}>{ 
+          user?.userType == "driver" 
+              ? `Hello, ${user?.firstName}!`
+              : `Welcome!`
+        }</Text>
         <Text style={styles.subtitle}>Where would you like to go?</Text>
       </View>
 

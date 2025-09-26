@@ -1,20 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { User } from '@/src/Styles/drivers';
+import { useAuth } from '@/src/core/context/AuthContext';
 
 const { width } = Dimensions.get('window');
 
 export default function UserTypeSelectionScreen() {
+  const [formData, setFormData] = useState<User>({
+    firstName: ' ',
+    lastName: ' ',
+    email: ' ',
+    phoneNumber: ' ',
+    userType: 'rider',
+  });
+  const { signupRider, isLoading } = useAuth();
+
+  const RiderRegistration = async () => {
+    // Basic validation
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phoneNumber) {
+      Alert.alert('Required Fields', 'Please fill in all fields');
+      return;
+    }
+
+    try {
+      await signupRider(formData);
+      router.replace('/(app)/(tabs)/home');
+    } catch (error: any) {
+      Alert.alert('Registration Failed', error.message);
+    }
+  };
+
   const handleRiderSelection = () => {
-    router.push('/rider-signup');
+    //router.push('/rider-signup'); 
+
+    RiderRegistration();
   };
 
   const handleDriverSelection = () => {
