@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DriverRegistrationForm, User, UserType } from '@/src/Styles/drivers';
 import { LoginForm } from '@/src/Styles/login';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { supabase } from '../../../lib/supabase';
 
 
 interface AuthContextType {
