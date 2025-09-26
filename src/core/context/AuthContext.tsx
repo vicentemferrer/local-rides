@@ -217,10 +217,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const updateProfile = async (userData: Partial<User>): Promise<void> => {
-    if (user) {
-      const updatedUser = { ...user, ...userData };
-      setUser(updatedUser);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
+    if (!user || !user.id) {
+      throw new Error('No user logged in');
+    }
+
+    try {
+      const { error } = await supabase
+        .from('drivers')
+        .update({
+          first_name: userData.firstName,
+          last_name: userData.lastName,
+          email: userData.email,
+          phone_number: userData.phoneNumber,
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      // Update local user state
+      setUser({ ...user, ...userData });
+    } catch (error) {
+      throw error;
     }
   };
 
