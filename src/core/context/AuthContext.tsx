@@ -204,20 +204,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const signupDriver = async (userDiverData: DriverRegistrationForm): Promise<void> => {
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Longer for "document verification"
-
-    const newDriverUser: DriverRegistrationForm = userDiverData;
-
-    setUser(newDriverUser.personalInfo);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(userDiverData));
-    setIsLoading(false);
-  };
-
   const logout = async (): Promise<void> => {
-    setUser(null);
-    await AsyncStorage.removeItem(STORAGE_KEY);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error signing out:', error.message);
+      }
+      setUser(null);
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
 
   const updateProfile = async (userData: Partial<User>): Promise<void> => {
