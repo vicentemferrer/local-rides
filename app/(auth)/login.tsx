@@ -1,16 +1,16 @@
+import { useAuth } from '@/hooks/useAuth';
+import { Link, router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link, router } from 'expo-router';
-import { useAuth } from '@/src/core/context/AuthContext';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('test@localrides.com'); // Pre-filled for testing

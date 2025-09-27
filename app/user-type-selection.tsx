@@ -11,7 +11,7 @@ import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { User } from '@/src/Styles/drivers';
-import { useAuth } from '@/src/core/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 const { width } = Dimensions.get('window');
 

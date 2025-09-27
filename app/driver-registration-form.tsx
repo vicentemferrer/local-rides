@@ -11,21 +11,22 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../src/core/context/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DriverRegistrationForm } from '@/src/Styles/drivers';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function DriverRegistrationFormScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { signupDriver } = useAuth();
-  
+
   const [formData, setFormData] = useState<DriverRegistrationForm>({
     personalInfo: {
       firstName: '',
       lastName: '',
       email: '',
       phoneNumber: '',
-      userType: 'driver'
+      userType: 'driver',
+      password: '',
     },
     licenseInfo: {
       licenseNumber: '',
@@ -58,7 +59,7 @@ export default function DriverRegistrationFormScreen() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    
+
     try {
       await signupDriver(formData);
       Alert.alert(
@@ -76,8 +77,8 @@ export default function DriverRegistrationFormScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton} 
+        <TouchableOpacity
+          style={styles.backButton}
           onPress={() => router.back()}
         >
           <Ionicons name="arrow-back" size={24} color="#007AFF" />
@@ -89,7 +90,7 @@ export default function DriverRegistrationFormScreen() {
         {/* Personal Information Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Personal Information</Text>
-          
+
           <TextInput
             style={styles.input}
             placeholderTextColor="#8E8E93"
@@ -97,7 +98,7 @@ export default function DriverRegistrationFormScreen() {
             value={formData.personalInfo.firstName}
             onChangeText={(text) => updateFormData('personalInfo', 'firstName', text)}
           />
-          
+
           <TextInput
             style={styles.input}
             placeholderTextColor="#8E8E93"
@@ -105,7 +106,7 @@ export default function DriverRegistrationFormScreen() {
             value={formData.personalInfo.lastName}
             onChangeText={(text) => updateFormData('personalInfo', 'lastName', text)}
           />
-          
+
           <TextInput
             style={styles.input}
             placeholder="Email Address"
@@ -115,7 +116,7 @@ export default function DriverRegistrationFormScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
           />
-          
+
           <TextInput
             style={styles.input}
             placeholderTextColor="#8E8E93"
@@ -124,12 +125,22 @@ export default function DriverRegistrationFormScreen() {
             onChangeText={(text) => updateFormData('personalInfo', 'phoneNumber', text)}
             keyboardType="phone-pad"
           />
+
+          <TextInput
+            style={styles.input}
+            placeholderTextColor="#8E8E93"
+            placeholder="Password"
+            value={formData.personalInfo.password}
+            onChangeText={(text) => updateFormData('personalInfo', 'password', text)}
+            secureTextEntry={true}
+          />
+
         </View>
 
         {/* License Information Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Driver's License</Text>
-          
+
           <TextInput
             style={styles.input}
             placeholderTextColor="#8E8E93"
@@ -137,7 +148,7 @@ export default function DriverRegistrationFormScreen() {
             value={formData.licenseInfo.licenseNumber}
             onChangeText={(text) => updateFormData('licenseInfo', 'licenseNumber', text)}
           />
-          
+
           <TextInput
             style={styles.input}
             placeholderTextColor="#8E8E93"
@@ -145,7 +156,7 @@ export default function DriverRegistrationFormScreen() {
             value={formData.licenseInfo.expirationDate}
             onChangeText={(text) => updateFormData('licenseInfo', 'expirationDate', text)}
           />
-          
+
           <TextInput
             style={styles.input}
             placeholderTextColor="#8E8E93"
@@ -158,7 +169,7 @@ export default function DriverRegistrationFormScreen() {
         {/* Vehicle Information Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Vehicle Information</Text>
-          
+
           <TextInput
             style={styles.input}
             placeholderTextColor="#8E8E93"
@@ -166,7 +177,7 @@ export default function DriverRegistrationFormScreen() {
             value={formData.vehicleInfo.make}
             onChangeText={(text) => updateFormData('vehicleInfo', 'make', text)}
           />
-          
+
           <TextInput
             style={styles.input}
             placeholderTextColor="#8E8E93"
@@ -174,7 +185,7 @@ export default function DriverRegistrationFormScreen() {
             value={formData.vehicleInfo.model}
             onChangeText={(text) => updateFormData('vehicleInfo', 'model', text)}
           />
-          
+
           <TextInput
             style={styles.input}
             placeholderTextColor="#8E8E93"
@@ -183,7 +194,7 @@ export default function DriverRegistrationFormScreen() {
             onChangeText={(text) => updateFormData('vehicleInfo', 'year', text)}
             keyboardType="numeric"
           />
-          
+
           <TextInput
             style={styles.input}
             placeholderTextColor="#8E8E93"
@@ -191,10 +202,10 @@ export default function DriverRegistrationFormScreen() {
             value={formData.vehicleInfo.color}
             onChangeText={(text) => updateFormData('vehicleInfo', 'color', text)}
           />
-          
+
           <TextInput
             style={styles.input}
-            placeholderTextColor="#8E8E93" 
+            placeholderTextColor="#8E8E93"
             placeholder="License Plate"
             value={formData.vehicleInfo.licensePlate}
             onChangeText={(text) => updateFormData('vehicleInfo', 'licensePlate', text.toUpperCase())}
@@ -204,7 +215,7 @@ export default function DriverRegistrationFormScreen() {
         {/* Documents Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Required Documents</Text>
-          
+
           <View style={styles.documentItem}>
             <View style={styles.documentInfo}>
               <Text style={styles.documentTitle}>Driver's License</Text>
@@ -214,7 +225,7 @@ export default function DriverRegistrationFormScreen() {
               <Ionicons name="checkmark-circle" size={24} color="#34C759" />
             </View>
           </View>
-          
+
           <View style={styles.documentItem}>
             <View style={styles.documentInfo}>
               <Text style={styles.documentTitle}>Vehicle Insurance</Text>
@@ -224,7 +235,7 @@ export default function DriverRegistrationFormScreen() {
               <Ionicons name="checkmark-circle" size={24} color="#34C759" />
             </View>
           </View>
-          
+
           <View style={styles.documentItem}>
             <View style={styles.documentInfo}>
               <Text style={styles.documentTitle}>Vehicle Registration</Text>
@@ -248,8 +259,8 @@ export default function DriverRegistrationFormScreen() {
         </View>
 
         {/* Submit Button */}
-        <TouchableOpacity 
-          style={styles.submitButton} 
+        <TouchableOpacity
+          style={styles.submitButton}
           onPress={handleSubmit}
           disabled={isSubmitting}
         >
@@ -262,7 +273,7 @@ export default function DriverRegistrationFormScreen() {
 
         <View style={styles.termsSection}>
           <Text style={styles.termsText}>
-            By submitting this application, you agree to our Terms of Service and Privacy Policy. 
+            By submitting this application, you agree to our Terms of Service and Privacy Policy.
             You also consent to background and driving record checks.
           </Text>
         </View>
@@ -279,33 +290,33 @@ const styles = StyleSheet.create({
   content: { flex: 1, paddingHorizontal: 24 },
   section: { marginBottom: 32 },
   sectionTitle: { fontSize: 20, fontWeight: 'bold', color: '#1D1D1F', marginBottom: 16 },
-  input: { 
-    backgroundColor: '#F8F9FA', 
-    borderRadius: 12, 
-    padding: 16, 
-    fontSize: 16, 
-    marginBottom: 12, 
-    borderWidth: 1, 
-    borderColor: '#E5E5EA' 
+  input: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E5E5EA'
   },
-  documentItem: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    backgroundColor: '#F8F9FA', 
-    borderRadius: 12, 
-    padding: 16, 
-    marginBottom: 12 
+  documentItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12
   },
   documentInfo: { flex: 1 },
   documentTitle: { fontSize: 16, fontWeight: '600', color: '#1D1D1F', marginBottom: 4 },
   documentSubtitle: { fontSize: 14, color: '#8E8E93' },
   documentStatus: { marginLeft: 12 },
-  noticeBox: { 
-    flexDirection: 'row', 
-    backgroundColor: '#F0F8FF', 
-    borderRadius: 12, 
-    padding: 16, 
+  noticeBox: {
+    flexDirection: 'row',
+    backgroundColor: '#F0F8FF',
+    borderRadius: 12,
+    padding: 16,
     marginBottom: 24,
     borderWidth: 1,
     borderColor: '#B3D9FF'
@@ -313,19 +324,19 @@ const styles = StyleSheet.create({
   noticeContent: { marginLeft: 12, flex: 1 },
   noticeTitle: { fontSize: 16, fontWeight: '600', color: '#1D4ED8', marginBottom: 4 },
   noticeText: { fontSize: 14, color: '#1D4ED8', lineHeight: 20 },
-  submitButton: { 
-    backgroundColor: '#34C759', 
-    borderRadius: 12, 
-    padding: 16, 
-    alignItems: 'center', 
-    marginBottom: 24 
+  submitButton: {
+    backgroundColor: '#34C759',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 24
   },
   submitButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
   termsSection: { paddingBottom: 32 },
-  termsText: { 
-    fontSize: 12, 
-    color: '#8E8E93', 
-    textAlign: 'center', 
-    lineHeight: 18 
+  termsText: {
+    fontSize: 12,
+    color: '#8E8E93',
+    textAlign: 'center',
+    lineHeight: 18
   },
 });
