@@ -1,23 +1,23 @@
+import { DriverRegistrationForm } from '@/src/Styles/drivers';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../src/core/context/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { DriverRegistrationForm } from '@/src/Styles/drivers';
+import { useSupabaseAuth } from '../src/core/context/SupabaseAuthContext';
 
 export default function DriverRegistrationFormScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { signupDriver } = useAuth();
+  const { signupDriver } = useSupabaseAuth();
   
   const [formData, setFormData] = useState<DriverRegistrationForm>({
     personalInfo: {
@@ -25,7 +25,8 @@ export default function DriverRegistrationFormScreen() {
       lastName: '',
       email: '',
       phoneNumber: '',
-      userType: 'driver'
+      userType: 'driver',
+      password: ''
     },
     licenseInfo: {
       licenseNumber: '',
@@ -123,6 +124,16 @@ export default function DriverRegistrationFormScreen() {
             value={formData.personalInfo.phoneNumber}
             onChangeText={(text) => updateFormData('personalInfo', 'phoneNumber', text)}
             keyboardType="phone-pad"
+          />
+          
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#8E8E93"
+            value={formData.personalInfo.password}
+            onChangeText={(text) => updateFormData('personalInfo', 'password', text)}
+            secureTextEntry
+            autoCapitalize="none"
           />
         </View>
 
