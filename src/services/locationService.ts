@@ -13,6 +13,12 @@ class LocationService {
     this.setupBackgroundTask();
   }
 
+  // request location permissions
+  private async requestPermissions(): Promise<boolean> {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    return status === "granted";
+  }
+
   // tracking driver location
   async startTracking(driverId: string): Promise<boolean> {
     if (!(await this.requestPermissions())) {
