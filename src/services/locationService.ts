@@ -13,3 +13,18 @@ class LocationService {
     this.setupBackgroundTask();
   }
 
+  // tracking driver location
+  async startTracking(driverId: string): Promise<boolean> {
+    if (!(await this.requestPermissions())) {
+      return false;
+    }
+
+    this.driverId = driverId;
+
+    // foreground tracking (when app is open)
+    this.locationSubscription = await Location.watchPositionAsync(
+      { accuracy: Location.Accuracy.High, timeInterval: 5000 },
+      (location) => {
+        this.saveLocation(location.coords.latitude, location.coords.longitude);
+      }
+    );
