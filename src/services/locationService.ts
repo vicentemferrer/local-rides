@@ -58,3 +58,11 @@ class LocationService {
     });
   }
 
+// if tracking check
+  isCurrentlyTracking(): boolean {
+    return this.isTracking;
+  }
+}
+
+export const locationService = new LocationService();
+export default locationService;
