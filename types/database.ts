@@ -354,6 +354,44 @@ export type Database = {
           }
         ]
       }
+      driver_locations: {
+        Row: {
+          id: string
+          driver_id: string
+          latitude: number
+          longitude: number
+          speed: number | null
+          timestamp: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          driver_id: string
+          latitude: number
+          longitude: number
+          speed?: number | null
+          timestamp: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          driver_id?: string
+          latitude?: number
+          longitude?: number
+          speed?: number | null
+          timestamp?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_locations_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
