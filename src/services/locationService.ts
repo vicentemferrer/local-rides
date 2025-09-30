@@ -37,3 +37,18 @@ class LocationService {
     this.driverId = null;
   }
 
+  // save location to database
+  private async saveLocation(
+    latitude: number,
+    longitude: number
+  ): Promise<void> {
+    if (!this.driverId) return;
+
+    await supabase.from("driver_locations").insert({
+      driver_id: this.driverId,
+      latitude,
+      longitude,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
