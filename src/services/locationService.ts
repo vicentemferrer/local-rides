@@ -13,6 +13,19 @@ class LocationService {
     this.setupBackgroundTask();
   }
 
+  // background tracking
+  private setupBackgroundTask() {
+    TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
+      if (error) return;
+
+      const { locations } = data as any;
+      if (locations?.[0]) {
+        const location = locations[0];
+        this.saveLocation(location.coords.latitude, location.coords.longitude);
+      }
+    });
+  }
+
   // request location permissions
   private async requestPermissions(): Promise<boolean> {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -34,6 +47,16 @@ class LocationService {
         this.saveLocation(location.coords.latitude, location.coords.longitude);
       }
     );
+
+// background tracking (when app is minimized)
+    await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
+      accuracy: Location.Accuracy.High,
+      timeInterval: 5000,
+    });
+
+    this.isTracking = true;
+    return true;
+  }
 
   // stop tracking
   async stopTracking(): Promise<void> {
