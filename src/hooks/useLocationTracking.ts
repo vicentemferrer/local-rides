@@ -9,6 +9,14 @@ export interface UseLocationTrackingReturn {
   error: string | null;
 }
 
+export const useLocationTracking = (): UseLocationTrackingReturn => {
+  const [isTracking, setIsTracking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // tracking check upon mount
+    setIsTracking(locationService.isCurrentlyTracking());
+  }, []);
 
   const startTracking = useCallback(
     async (driverId: string): Promise<boolean> => {
