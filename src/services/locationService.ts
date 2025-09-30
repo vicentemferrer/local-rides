@@ -1,8 +1,8 @@
-import * as Location from 'expo-location';
-import * as TaskManager from 'expo-task-manager';
-import { supabase } from '../../lib/supabase';
+import * as Location from "expo-location";
+import * as TaskManager from "expo-task-manager";
+import { supabase } from "../../lib/supabase";
 
-const LOCATION_TASK_NAME = 'background-location-task';
+const LOCATION_TASK_NAME = "background-location-task";
 
 class LocationService {
   private driverId: string | null = null;
@@ -48,7 +48,7 @@ class LocationService {
       }
     );
 
-// background tracking (when app is minimized)
+    // background tracking (when app is minimized)
     await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
       accuracy: Location.Accuracy.High,
       timeInterval: 5000,
@@ -81,7 +81,7 @@ class LocationService {
     });
   }
 
-// if tracking check
+  // if tracking check
   isCurrentlyTracking(): boolean {
     return this.isTracking;
   }
