@@ -39,3 +39,16 @@ export interface UseLocationTrackingReturn {
     },
     []
   );
+
+  const stopTracking = useCallback(async (): Promise<void> => {
+    try {
+      setError(null);
+      await locationService.stopTracking();
+      setIsTracking(false);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error occurred";
+      setError(errorMessage);
+    }
+  }, []);
+
