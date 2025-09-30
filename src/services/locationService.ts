@@ -28,3 +28,12 @@ class LocationService {
         this.saveLocation(location.coords.latitude, location.coords.longitude);
       }
     );
+
+  // stop tracking
+  async stopTracking(): Promise<void> {
+    this.locationSubscription?.remove();
+    await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
+    this.isTracking = false;
+    this.driverId = null;
+  }
+
