@@ -38,27 +38,131 @@ export type Database = {
         }
         Relationships: []
       }
-      Buses: {
+      driver_documents: {
         Row: {
-          bus_capacity: number | null
-          created_at: string
-          driver_id: string | null
-          id: number
-          plate_number: string | null
+          created_at: string | null
+          driver_id: string
+          insurance_status: string
+          insurance_url: string | null
+          license_status: string
+          license_url: string | null
+          registration_status: string
+          registration_url: string | null
+          updated_at: string | null
+          uploaded_at: string | null
         }
         Insert: {
-          bus_capacity?: number | null
-          created_at?: string
-          driver_id?: string | null
-          id?: number
-          plate_number?: string | null
+          created_at?: string | null
+          driver_id: string
+          insurance_status?: string
+          insurance_url?: string | null
+          license_status?: string
+          license_url?: string | null
+          registration_status?: string
+          registration_url?: string | null
+          updated_at?: string | null
+          uploaded_at?: string | null
         }
         Update: {
-          bus_capacity?: number | null
+          created_at?: string | null
+          driver_id?: string
+          insurance_status?: string
+          insurance_url?: string | null
+          license_status?: string
+          license_url?: string | null
+          registration_status?: string
+          registration_url?: string | null
+          updated_at?: string | null
+          uploaded_at?: string | null
+        }
+        Relationships: []
+      }
+      driver_signup_status: {
+        Row: {
+          created_at: string
+          email: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
           created_at?: string
-          driver_id?: string | null
-          id?: number
-          plate_number?: string | null
+          email: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      drivers: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_verified: boolean | null
+          license_expiry: string
+          license_number: string
+          license_state: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          license_expiry: string
+          license_number: string
+          license_state: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          license_expiry?: string
+          license_number?: string
+          license_state?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drivers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drivers_plates: {
+        Row: {
+          created_at: string | null
+          license_expiry: string
+          license_number: string
+          license_state: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          license_expiry: string
+          license_number: string
+          license_state: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          license_expiry?: string
+          license_number?: string
+          license_state?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -125,234 +229,83 @@ export type Database = {
         }
         Relationships: []
       }
-      Users: {
+      users: {
         Row: {
-          created_at: string
-          fare: number | null
-          id: number
-          username: string | null
-          vehicle: string | null
+          created_at: string | null
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          phone_number: string | null
+          updated_at: string | null
+          user_type: string
         }
         Insert: {
-          created_at?: string
-          fare?: number | null
-          id?: number
-          username?: string | null
-          vehicle?: string | null
+          created_at?: string | null
+          email: string
+          first_name: string
+          id?: string
+          last_name: string
+          phone_number?: string | null
+          updated_at?: string | null
+          user_type: string
         }
         Update: {
-          created_at?: string
-          fare?: number | null
-          id?: number
-          username?: string | null
-          vehicle?: string | null
+          created_at?: string | null
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          phone_number?: string | null
+          updated_at?: string | null
+          user_type?: string
         }
         Relationships: []
       }
-      drivers: {
-        Row: {
-          id: string
-          first_name: string
-          last_name: string
-          email: string
-          phone_number: string
-          user_type: string
-          password_hash: string | null
-          profile_picture: string | null
-          is_active: boolean
-          email_verified: boolean
-          phone_verified: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          first_name: string
-          last_name: string
-          email: string
-          phone_number: string
-          user_type?: string
-          password_hash?: string | null
-          profile_picture?: string | null
-          is_active?: boolean
-          email_verified?: boolean
-          phone_verified?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          first_name?: string
-          last_name?: string
-          email?: string
-          phone_number?: string
-          user_type?: string
-          password_hash?: string | null
-          profile_picture?: string | null
-          is_active?: boolean
-          email_verified?: boolean
-          phone_verified?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "drivers_plates_user_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "drivers_plates"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "vehicles_driver_id_fkey"
-            columns: ["id"]
-            isOneToOne: false
-            referencedRelation: "vehicles"
-            referencedColumns: ["driver_id"]
-          },
-          {
-            foreignKeyName: "driver_documents_driver_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "driver_documents"
-            referencedColumns: ["driver_id"]
-          }
-        ]
-      }
-      drivers_plates: {
-        Row: {
-          user_id: string
-          license_number: string
-          license_expiry: string
-          license_state: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          user_id: string
-          license_number: string
-          license_expiry: string
-          license_state: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          user_id?: string
-          license_number?: string
-          license_expiry?: string
-          license_state?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "drivers_plates_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "drivers"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
       vehicles: {
         Row: {
-          id: string
+          color: string
+          created_at: string | null
           driver_id: string
+          id: string
+          is_active: boolean | null
+          license_plate: string
           make: string
           model: string
+          seating_capacity: number | null
+          updated_at: string | null
+          vehicle_type: string | null
           year: string
-          color: string
-          license_plate: string
-          vehicle_type: string
-          seating_capacity: number
-          is_active: boolean
-          created_at: string
-          updated_at: string
         }
         Insert: {
-          id?: string
+          color: string
+          created_at?: string | null
           driver_id: string
+          id?: string
+          is_active?: boolean | null
+          license_plate: string
           make: string
           model: string
+          seating_capacity?: number | null
+          updated_at?: string | null
+          vehicle_type?: string | null
           year: string
-          color: string
-          license_plate: string
-          vehicle_type?: string
-          seating_capacity?: number
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
         }
         Update: {
-          id?: string
+          color?: string
+          created_at?: string | null
           driver_id?: string
+          id?: string
+          is_active?: boolean | null
+          license_plate?: string
           make?: string
           model?: string
+          seating_capacity?: number | null
+          updated_at?: string | null
+          vehicle_type?: string | null
           year?: string
-          color?: string
-          license_plate?: string
-          vehicle_type?: string
-          seating_capacity?: number
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "vehicles_driver_id_fkey"
-            columns: ["driver_id"]
-            isOneToOne: false
-            referencedRelation: "drivers"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      driver_documents: {
-        Row: {
-          driver_id: string
-          license_status: string
-          insurance_status: string
-          registration_status: string
-          license_url: string | null
-          insurance_url: string | null
-          registration_url: string | null
-          uploaded_at: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          driver_id: string
-          license_status?: string
-          insurance_status?: string
-          registration_status?: string
-          license_url?: string | null
-          insurance_url?: string | null
-          registration_url?: string | null
-          uploaded_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          driver_id?: string
-          license_status?: string
-          insurance_status?: string
-          registration_status?: string
-          license_url?: string | null
-          insurance_url?: string | null
-          registration_url?: string | null
-          uploaded_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "driver_documents_driver_id_fkey"
-            columns: ["driver_id"]
-            isOneToOne: true
-            referencedRelation: "drivers"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
     }
     Views: {

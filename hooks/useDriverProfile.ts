@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { DriverRegistrationForm } from '../src/Styles/drivers';
-import { Tables } from '../types/database';
+import { Tables } from '../types/database.types';
 import { useAuth } from './useAuth';
 
 // Type definitions for our database tables
