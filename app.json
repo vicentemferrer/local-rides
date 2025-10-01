@@ -38,6 +38,16 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "This app needs access to location to track driver positions for ride services.",
+          "locationAlwaysPermission": "This app needs access to location to track driver positions even when the app is in the background.",
+          "locationWhenInUsePermission": "This app needs access to location to track driver positions for ride services.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true
+        }
       ]
     ],
     "experiments": {
@@ -45,8 +55,8 @@
       "reactCompiler": true
     },
     "extra": {
-      "supabaseUrl": "your-supabase-url",
-      "supabaseAnonKey": "your-supabase-anon-key"
+      "supabaseUrl": "https://kbqpdtvitnyzjvnurjdi.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImticXBkdHZpdG55emp2bnVyamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxNDQ5MDQsImV4cCI6MjA3MzcyMDkwNH0.s5FHmJqUfuV1H4yYXwQBMDKWETr9oMgYACDZuRw5GUg"
     }
   }
 }
