@@ -9,14 +9,14 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Link, router } from 'expo-router';
-import { useAuth } from '../src/core/context/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LoginForm } from '@/src/Styles/login';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginScreen() {
   const [formData, setFormData] = useState<LoginForm>({
-    email: 'jane.smith@example.com',   // Pre-filled for testing
-    password: 'password123',
+    email: '',   // Pre-filled for testing
+    password: '',
   });
   
   const { login, isLoading } = useAuth();

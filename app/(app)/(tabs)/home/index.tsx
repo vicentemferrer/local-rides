@@ -1,9 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '@/hooks/useAuth';
 import { router } from 'expo-router';
-import { useAuth } from '@/src/core/context/AuthContext';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const { user } = useAuth();
@@ -11,7 +11,11 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>Hello, {user?.firstName}!</Text>
+        <Text style={styles.greeting}>{ 
+          user?.userType == "driver" 
+              ? `Hello, ${user?.firstName}!`
+              : `Welcome!`
+        }</Text>
         <Text style={styles.subtitle}>Where would you like to go?</Text>
       </View>
 

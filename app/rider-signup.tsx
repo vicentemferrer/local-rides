@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../src/core/context/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { User } from '@/src/Styles/drivers';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function RiderSignupScreen() {
   const [formData, setFormData] = useState<User>({
