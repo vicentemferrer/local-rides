@@ -60,3 +60,10 @@ export const useLocationTracking = (): UseLocationTrackingReturn => {
     }
   }, []);
 
+return {
+    isTracking,
+    startTracking,
+    stopTracking,
+    error,
+  };
+};
