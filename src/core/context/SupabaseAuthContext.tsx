@@ -62,15 +62,15 @@ export const SupabaseAuthProvider: React.FC<{ children: ReactNode }> = ({ childr
 
       if (driverData) {
         // Convert Supabase user data to our User interface
-        const userData: User = {
-          id: driverData.id,
-          firstName: driverData.first_name,
-          lastName: driverData.last_name,
-          email: driverData.email,
-          phoneNumber: driverData.phone_number,
-          userType: driverData.user_type as UserType,
-        };
-        setUser(userData);
+        // const userData: User = {
+        //   id: driverData.id,
+        //   firstName: driverData.first_name,
+        //   lastName: driverData.last_name,
+        //   email: driverData.email,
+        //   phoneNumber: driverData.phone_number,
+        //   userType: driverData.user_type as UserType,
+        // };
+        // setUser(userData);
       } else {
         // User exists in Supabase Auth but not in our drivers table
         // This might be a rider or incomplete registration
@@ -135,24 +135,24 @@ export const SupabaseAuthProvider: React.FC<{ children: ReactNode }> = ({ childr
 
       if (data.user) {
         // Create rider record in drivers table (with user_type = 'rider')
-        const { error: insertError } = await supabase
-          .from('drivers')
-          .insert({
-            id: data.user.id,
-            first_name: userRiderData.firstName,
-            last_name: userRiderData.lastName,
-            email: userRiderData.email,
-            phone_number: userRiderData.phoneNumber,
-            user_type: 'rider',
-            is_active: true,
-            email_verified: false,
-            phone_verified: false,
-          });
+        // const { error: insertError } = await supabase
+        //   .from('drivers')
+        //   .insert({
+        //     id: data.user.id,
+        //     first_name: userRiderData.firstName,
+        //     last_name: userRiderData.lastName,
+        //     email: userRiderData.email,
+        //     phone_number: userRiderData.phoneNumber,
+        //     user_type: 'rider',
+        //     is_active: true,
+        //     email_verified: false,
+        //     phone_verified: false,
+        //   });
 
-        if (insertError) {
-          console.error('Error creating rider record:', insertError);
-          // Don't throw here as the auth user was created successfully
-        }
+        // if (insertError) {
+        //   console.error('Error creating rider record:', insertError);
+        //   // Don't throw here as the auth user was created successfully
+        // }
 
         await loadUserFromSupabase(data.user);
       }
@@ -185,21 +185,21 @@ export const SupabaseAuthProvider: React.FC<{ children: ReactNode }> = ({ childr
 
       if (data.user) {
         // Create driver record in drivers table
-        const { error: driverError } = await supabase
-          .from('drivers')
-          .insert({
-            id: data.user.id,
-            first_name: userDriverData.personalInfo.firstName,
-            last_name: userDriverData.personalInfo.lastName,
-            email: userDriverData.personalInfo.email,
-            phone_number: userDriverData.personalInfo.phoneNumber,
-            user_type: 'driver',
-            is_active: true,
-            email_verified: false,
-            phone_verified: false,
-          });
+        // const { error: driverError } = await supabase
+        //   .from('drivers')
+        //   .insert({
+        //     id: data.user.id,
+        //     first_name: userDriverData.personalInfo.firstName,
+        //     last_name: userDriverData.personalInfo.lastName,
+        //     email: userDriverData.personalInfo.email,
+        //     phone_number: userDriverData.personalInfo.phoneNumber,
+        //     user_type: 'driver',
+        //     is_active: true,
+        //     email_verified: false,
+        //     phone_verified: false,
+        //   });
 
-        if (driverError) throw driverError;
+        // if (driverError) throw driverError;
 
         // Create license record
         const { error: licenseError } = await supabase
@@ -268,17 +268,17 @@ export const SupabaseAuthProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
 
     try {
-      const { error } = await supabase
-        .from('drivers')
-        .update({
-          first_name: userData.firstName,
-          last_name: userData.lastName,
-          email: userData.email,
-          phone_number: userData.phoneNumber,
-        })
-        .eq('id', user.id);
+    //   const { error } = await supabase
+    //     .from('drivers')
+    //     .update({
+    //       first_name: userData.firstName,
+    //       last_name: userData.lastName,
+    //       email: userData.email,
+    //       phone_number: userData.phoneNumber,
+    //     })
+    //     .eq('id', user.id);
 
-      if (error) throw error;
+    //   if (error) throw error;
 
       // Update local user state
       setUser({ ...user, ...userData });
@@ -312,4 +312,3 @@ export const useSupabaseAuth = (): AuthContextType => {
   }
   return context;
 };
-
