@@ -4,6 +4,8 @@
 node_modules/
 package-lock.json
 package.json
+jest.setup.js
+launch.json
 .env
 
 # Expo
