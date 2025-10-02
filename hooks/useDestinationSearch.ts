@@ -1,16 +1,17 @@
-import { useState, useRef, useEffect } from 'react';
-import { Alert } from 'react-native';
+import { getPlaceDetails, PlacePrediction } from '@/src/core/api/placesService';
 import { router } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import { Alert } from 'react-native';
 import { usePlacesAutocomplete } from './usePlacesAutocomplete';
-import { PlacePrediction, getPlaceDetails } from '@/src/core/api/placesService';
 
 export function useDestinationSearch() {
   const [input, setInput] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
-  const { predictions, isLoading: isSearching, error, searchPlaces, clearPredictions } = usePlacesAutocomplete();
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const placesHook = usePlacesAutocomplete();
+  const { predictions, isLoading: isSearching, error, searchPlaces, clearPredictions } = placesHook;
+  const debounceRef = useRef<number>();
 
   // Debounced search
   useEffect(() => {

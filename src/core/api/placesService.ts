@@ -26,11 +26,11 @@ export interface PlaceDetails {
       lng: number;
     };
   };
-  address_components: Array<{
+  address_components: {
     long_name: string;
     short_name: string;
     types: string[];
-  }>;
+  }[];
 }
 
 const BASE_URL = 'https://maps.googleapis.com/maps/api/place';
