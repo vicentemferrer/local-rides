@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { DriverRegistrationForm, User, UserType } from '@/src/Styles/drivers';
+import { DriverRegistrationForm, normalizeUser, User, UserType } from '@/src/Styles/drivers';
 import { LoginForm } from '@/src/Styles/login';
 import { supabase } from '@/lib/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -71,7 +71,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } else if (storedUser) {
         // No session but we have stored user, use it temporarily
         // (though ideally session should exist if user is stored)
-        setUser(JSON.parse(storedUser));
+        setUser(normalizeUser(JSON.parse(storedUser)));
       } else {
         setUser(null);
       }
@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const storedUser = await AsyncStorage.getItem(USER_STORAGE_KEY);
         if (storedUser) {
-          setUser(JSON.parse(storedUser));
+          setUser(normalizeUser(JSON.parse(storedUser)));
         }
       } catch (_storageError) {
         //console.error('Error loading from storage:', storageError);
@@ -101,7 +101,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       if (profile) {
         // Save to both state and local storage
-        setUser(profile);
+        setUser(normalizeUser(profile));
         await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(profile));
       } else {
         await clearUserData();
@@ -198,7 +198,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         userType: 'rider' as UserType,
       };
       
-      setUser(tempUser);
+      setUser(normalizeUser(tempUser));
       await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(tempUser));
     } catch (error) {
       throw error;
@@ -364,14 +364,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (error) throw new Error(error.message);
 
     const updatedUser = { ...user, ...userData };
-    setUser(updatedUser);
+    setUser(normalizeUser(updatedUser));
     
     // Update storage
     await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
   };
 
   const value: AuthContextType = {
-    user,
+    user: normalizeUser(user),
     isAuthenticated: !!user,
     isLoading,
     login,

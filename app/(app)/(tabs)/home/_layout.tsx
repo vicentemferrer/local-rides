@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import React from 'react';
 
 export default function HomeLayout() {
   return (
@@ -14,9 +15,7 @@ export default function HomeLayout() {
         name="booking" 
         options={{ 
           title: 'Book a Ride',
-          headerBackVisible: false,
-          headerLargeTitle: false,
-          //headerBackTitleVisible: false,
+          headerShown: false,
         }} 
       />
       <Stack.Screen 
