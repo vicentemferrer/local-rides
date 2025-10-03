@@ -87,13 +87,6 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </Link>
         </View>
-
-        {/* Testing Helper */}
-        <View style={styles.testInfo}>
-          <Text style={styles.testInfoText}>Test Accounts:</Text>
-          <Text style={styles.testInfoText}>test@localrides.com | password123</Text>
-          <Text style={styles.testInfoText}>demo@localrides.com | password123</Text>
-        </View>
       </View>
     </SafeAreaView>
   );

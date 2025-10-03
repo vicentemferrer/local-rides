@@ -13,13 +13,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('test@localrides.com'); // Pre-filled for testing
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState(''); // Pre-filled for testing
+  const [password, setPassword] = useState('');
   const { login, isLoading } = useAuth();
 
   const handleLogin = async () => {
     try {
-      await login(email, password);
+      await login({email, password});
       router.replace('/(app)/(tabs)/home');
     } catch (error: any) {
       Alert.alert('Login Failed', error.message);
@@ -83,12 +83,6 @@ export default function LoginScreen() {
           </Link>
         </View>
 
-        {/* Testing Helper */}
-        <View style={styles.testInfo}>
-          <Text style={styles.testInfoText}>Test Accounts:</Text>
-          <Text style={styles.testInfoText}>test@localrides.com | password123</Text>
-          <Text style={styles.testInfoText}>demo@localrides.com | password123</Text>
-        </View>
       </View>
     </SafeAreaView>
   );

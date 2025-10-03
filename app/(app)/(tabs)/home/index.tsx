@@ -1,12 +1,36 @@
 import { useAuth } from '@/hooks/useAuth';
 import { router } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+
+  console.log('User data:', user);
+
+  if (isLoading && user == null) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <View style={styles.loadingContent}>
+            <View style={styles.loadingIconContainer}>
+              <Ionicons name="car-sport" size={48} color="#007AFF" />
+              <ActivityIndicator 
+                size="large" 
+                color="#007AFF" 
+                style={styles.loadingSpinner}
+              />
+            </View>
+            <Text style={styles.loadingTitle}>Loading your ride</Text>
+            <Text style={styles.loadingSubtitle}>Please wait a moment...</Text>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -16,10 +40,22 @@ export default function HomeScreen() {
               ? `Hello, ${user?.firstName}!`
               : `Welcome!`
         }</Text>
-        <Text style={styles.subtitle}>Where would you like to go?</Text>
       </View>
 
-      <View style={styles.container}>
+      {user?.userType === "rider" && (
+        <View style={styles.searchBarContainer}>
+          <TouchableOpacity 
+            style={styles.searchBar}
+            onPress={() => router.push('/(app)/(tabs)/home/booking')}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="search" size={20} color="#8E8E93" style={styles.searchIcon} />
+            <Text style={styles.searchPlaceholder}>Where are you going?</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      <View style={styles.mapContainer}>
         <MapView
           style={styles.map}
           initialRegion={{
@@ -37,35 +73,65 @@ export default function HomeScreen() {
         </MapView>
       </View>
 
-      <View style={styles.actions}>
-        <TouchableOpacity
-          style={styles.bookButton}
-          // router.push('/(tabs)/home/booking')}
-          onPress={() => router.push('/')}
-        >
-          <Text style={styles.bookButtonText}>Book a Ride</Text>
-        </TouchableOpacity>
+      {user?.userType === "driver" && (
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={styles.bookButton}
+            onPress={() => router.push('/')}
+          >
+            <Text style={styles.bookButtonText}>Book a Ride</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.destinationButton}
-          //router.push('/(tabs)/home/destination')}
-          onPress={() => router.push('/')}
-        >
-          <Text style={styles.destinationButtonText}>Choose Destination</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={styles.destinationButton}
+            onPress={() => router.push('/')}
+          >
+            <Text style={styles.destinationButtonText}>Choose Destination</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  map: {
-    width: '100%',
-    height: '100%',
-  },
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  loadingContent: {
+    alignItems: 'center',
+    paddingHorizontal: 48,
+  },
+  loadingIconContainer: {
+    position: 'relative',
+    width: 120,
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  loadingSpinner: {
+    position: 'absolute',
+    transform: [{ scale: 1.8 }],
+  },
+  loadingTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#1D1D1F',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  loadingSubtitle: {
+    fontSize: 16,
+    color: '#8E8E93',
+    textAlign: 'center',
   },
   header: {
     padding: 24,
@@ -77,28 +143,41 @@ const styles = StyleSheet.create({
     color: '#1D1D1F',
     marginBottom: 4,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#8E8E93',
+  searchBarContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 16,
   },
-  mapPlaceholder: {
-    flex: 1,
-    margin: 24,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 16,
-    justifyContent: 'center',
+  searchBar: {
+    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 2,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
     borderColor: '#E5E5EA',
-    borderStyle: 'dashed',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  mapText: {
-    fontSize: 32,
-    marginBottom: 8,
+  searchIcon: {
+    marginRight: 12,
   },
-  mapSubtext: {
+  searchPlaceholder: {
+    flex: 1,
     fontSize: 16,
     color: '#8E8E93',
+  },
+  mapContainer: {
+    flex: 1,
+  },
+  map: {
+    width: '100%',
+    height: '100%',
   },
   actions: {
     padding: 24,
