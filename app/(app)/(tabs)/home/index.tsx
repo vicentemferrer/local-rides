@@ -9,8 +9,6 @@ import { Ionicons } from '@expo/vector-icons';
 export default function HomeScreen() {
   const { user, isLoading } = useAuth();
 
-  console.log('User data:', user);
-
   if (isLoading && user == null) {
     return (
       <SafeAreaView style={styles.container}>
