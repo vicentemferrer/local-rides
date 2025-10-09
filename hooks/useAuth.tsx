@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { DriverRegistrationForm, User, UserType } from '@/src/Styles/drivers';
+import { DriverRegistrationForm, normalizeUser, User, UserType } from '@/src/Styles/drivers';
 import { LoginForm } from '@/src/Styles/login';
 import { supabase } from '@/lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface AuthContextType {
   user: User | null;
@@ -14,6 +15,8 @@ interface AuthContextType {
   updateProfile: (userData: Partial<User>) => Promise<void>;
 }
 
+const USER_STORAGE_KEY = '@localrides:user';
+
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -21,99 +24,187 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchCurrentUser();
+    // Restore session on mount
+    initializeAuth();
+
+    // Listen for auth state changes (login, logout, token refresh)
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        // User is logged in, fetch and save their profile
+        await fetchAndSaveUserProfile(session.user.id);
+      } else {
+        // No session, clear user
+        await clearUserData();
+      }
+      
+      setIsLoading(false);
+    });
+
+    // Cleanup listener on unmount
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
   }, []);
 
-  /** Fetch currently logged-in user */
-  const fetchCurrentUser = async () => {
+  /** Initialize auth by checking both Supabase session and local storage */
+  const initializeAuth = async () => {
     setIsLoading(true);
-    const { data: currentUser, error } = await supabase.auth.getUser();
-    if (error) console.error('Supabase fetch user error:', error);
-    if (currentUser?.user) {
-      // Fetch additional profile from users table
-      const { data: profile } = await supabase
+    try {
+      // First, check if we have a stored user profile
+      const storedUser = await AsyncStorage.getItem(USER_STORAGE_KEY);
+      
+      // Get current Supabase session (this will restore from storage)
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        // If there's a session error, try to use stored user
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        }
+        setIsLoading(false);
+        return;
+      }
+
+      if (session?.user) {
+        // We have an active session, fetch fresh profile
+        await fetchAndSaveUserProfile(session.user.id);
+      } else if (storedUser) {
+        // No session but we have stored user, use it temporarily
+        // (though ideally session should exist if user is stored)
+        setUser(normalizeUser(JSON.parse(storedUser)));
+      } else {
+        setUser(null);
+      }
+    } catch (error) {
+      // Try to load from storage as fallback
+      try {
+        const storedUser = await AsyncStorage.getItem(USER_STORAGE_KEY);
+        if (storedUser) {
+          setUser(normalizeUser(JSON.parse(storedUser)));
+        }
+      } catch (_storageError) {
+        //console.error('Error loading from storage:', storageError);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /** Fetch user profile from database and save to local storage */
+  const fetchAndSaveUserProfile = async (userId: string) => {
+    try {
+      const { data: profile, error: _profileError } = await supabase
         .from('users')
         .select('*')
-        .eq('id', currentUser.user.id)
+        .eq('id', userId)
         .single() as { data: User; error: any };
-      setUser(profile ?? null);
+      
+      if (profile) {
+        // Save to both state and local storage
+        setUser(normalizeUser(profile));
+        await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(profile));
+      } else {
+        await clearUserData();
+      }
+    } catch (_error) {
     }
-    setIsLoading(false);
+  };
+
+  /** Clear user data from state and storage */
+  const clearUserData = async () => {
+    setUser(null);
+    try {
+      await AsyncStorage.removeItem(USER_STORAGE_KEY);
+    } catch (_error) {
+    }
   };
 
   /** Login user */
   const login = async (loginForm: LoginForm) => {
     setIsLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: loginForm.email,
-      password: loginForm.password,
-    });
-    if (error) throw new Error(error.message);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginForm.email,
+        password: loginForm.password, 
+      });
+      if (error) throw new Error(error.message);
 
-    // Fetch profile info
-    const { data: profile } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', data.user?.id)
-      .single() as { data: User; error: any };
-
-    setUser(profile ?? null);
-    setIsLoading(false);
+      // Fetch and save profile info
+      if (data.user?.id) {
+        await fetchAndSaveUserProfile(data.user.id);
+      }
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   /** Signup Rider */
-  const signupRider = async (userRiderData: User) => {
+  const signupRider = async (_userRiderData: User) => {
     setIsLoading(true);
-    // const { email, password, firstName, lastName, phoneNumber } = userRiderData;
+    try {
+      // const { email, password, firstName, lastName, phoneNumber } = userRiderData;
 
-    // // Create Supabase Auth account
-    // const { data, error } = await supabase.auth.signUp({
-    //   email,
-    //   password: password ?? Math.random().toString(36).slice(-8),
-    // });
-    // if (error) throw new Error(error.message);
+      // // Create Supabase Auth account
+      // const { data, error } = await supabase.auth.signUp({
+      //   email,
+      //   password: password ?? Math.random().toString(36).slice(-8),
+      // });
+      // if (error) throw new Error(error.message);
 
-    // // Check if user was created and is confirmed
-    // if (!data.user) throw new Error('User creation failed');
+      // // Check if user was created and is confirmed
+      // if (!data.user) throw new Error('User creation failed');
 
-    // // Sign in the user immediately after signup (this sets the session for RLS)
-    // const { error: signInError } = await supabase.auth.signInWithPassword({
-    //   email,
-    //   password: password ?? Math.random().toString(36).slice(-8),
-    // });
-    // if (signInError) throw new Error(signInError.message);
+      // // Sign in the user immediately after signup (this sets the session for RLS)
+      // const { error: signInError } = await supabase.auth.signInWithPassword({
+      //   email,
+      //   password: password ?? Math.random().toString(36).slice(-8),
+      // });
+      // if (signInError) throw new Error(signInError.message);
 
-    // // Insert profile in users table
-    // const { error: insertError } = await supabase.from('users').insert([
-    //   {
-    //     id: data.user.id,
-    //     first_name: firstName,
-    //     last_name: lastName,
-    //     email,
-    //     phone_number: phoneNumber,
-    //     user_type: 'rider',
-    //   },
-    // ]);
-    // if (insertError) throw new Error(insertError.message);
+      // // Insert profile in users table
+      // const { error: insertError } = await supabase.from('users').insert([
+      //   {
+      //     id: data.user.id,
+      //     first_name: firstName,
+      //     last_name: lastName,
+      //     email,
+      //     phone_number: phoneNumber,
+      //     user_type: 'rider',
+      //   },
+      // ]);
+      // if (insertError) throw new Error(insertError.message);
 
-    // setUser({
-    //   id: data.user.id,
-    //   firstName,
-    //   lastName,
-    //   email,
-    //   phoneNumber,
-    //   userType: 'rider',
-    // });
+      // const newUser = {
+      //   id: data.user.id,
+      //   firstName,
+      //   lastName,
+      //   email,
+      //   phoneNumber,
+      //   userType: 'rider',
+      // };
 
-    setUser({
-      id: 'temp-id',
-      firstName: "anonymous",
-      lastName: "anonymous",
-      email: "anonymous@gmail.com",
-      phoneNumber: "000-000-0000",
-      userType: 'rider',
-    });
-    setIsLoading(false);
+      // // Save to state and storage
+      // setUser(newUser);
+      // await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
+
+      const tempUser = {
+        id: 'temp-id',
+        firstName: "anonymous",
+        lastName: "anonymous",
+        email: "anonymous@gmail.com",
+        phoneNumber: "000-000-0000",
+        userType: 'rider' as UserType,
+      };
+      
+      setUser(normalizeUser(tempUser));
+      await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(tempUser));
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   /** Signup Driver */
@@ -124,7 +215,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     try {
       if (!email) throw new Error('Email is required');
-      const password = rawPassword ?? Math.random().toString(36).slice(-8); // ensure password is string
+      const password = rawPassword ?? Math.random().toString(36).slice(-8);
 
       // 1. Check signup status
       const { data: existingStatus, error: statusError } = await supabase
@@ -226,7 +317,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         .eq('email', email) as { data: any[] | null; error: any };
 
       if (error) {
-        console.error('Driver signup error:', error);
+        //console.error('Driver signup error:', error);
       } else if (!data || (Array.isArray(data) && data.length === 0)) {
         // No existing row found, so insert instead
         const { error: insertError } = await supabase
@@ -239,25 +330,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             },
           ]);
 
-        if (insertError) console.error('Insert error:', insertError);
-        else console.log('Signup created and marked as completed.');
+        // if (insertError) console.error('Insert error:', insertError);
+        // else console.log('Signup created and marked as completed.');
       } else {
-        console.log('Signup marked as completed.');
+        //console.log('Signup marked as completed.');
       }
 
-      // 7. Set user in state
-      setUser({
-        id: userId,
-        firstName,
-        lastName,
-        email,
-        phoneNumber,
-        userType: 'driver',
-      });
+      // 7. Fetch and save user profile
+      await fetchAndSaveUserProfile(userId);
 
     } catch (error: any) {
-      console.error('Driver signup error:', error);
-      throw error;
+      //console.error('Driver signup error:', error);
+      //throw error;
     } finally {
       setIsLoading(false);
     }
@@ -266,7 +350,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   /** Logout */
   const logout = async () => {
     await supabase.auth.signOut();
-    setUser(null);
+    await clearUserData();
   };
 
   /** Update Profile */
@@ -279,11 +363,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const { error } = await supabase.from('users').update(updates).eq('id', user.id);
     if (error) throw new Error(error.message);
 
-    setUser(prev => ({ ...prev!, ...userData }));
+    const updatedUser = { ...user, ...userData };
+    setUser(normalizeUser(updatedUser));
+    
+    // Update storage
+    await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
   };
 
   const value: AuthContextType = {
-    user,
+    user: normalizeUser(user),
     isAuthenticated: !!user,
     isLoading,
     login,
