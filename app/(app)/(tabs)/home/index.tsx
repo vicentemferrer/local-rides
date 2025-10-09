@@ -1,4 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
+import { useLocationContext } from '@/src/core/context/LocationContext';
 import { router } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
@@ -8,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
   const { user, isLoading } = useAuth();
+  const { location, region } = useLocationContext();
 
   console.log('User data:', user);
 
@@ -56,21 +58,16 @@ export default function HomeScreen() {
       )}
 
       <View style={styles.mapContainer}>
-        <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: 37.78825,
-            longitude: -122.4324,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-          }}
-        >
-          <Marker
-            coordinate={{ latitude: 37.78825, longitude: -122.4324 }}
-            title="My Location"
-            description="This is where I am"
-          />
-        </MapView>
+        <MapView style={styles.map} region={region}>
+					<Marker
+						coordinate={{
+							latitude: location?.coords?.latitude,
+							longitude: location?.coords?.longitude
+						}}
+						title='My Location'
+						description='This is where I am'
+					/>
+				</MapView>
       </View>
 
       {user?.userType === "driver" && (
