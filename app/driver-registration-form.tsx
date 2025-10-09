@@ -152,7 +152,7 @@ export default function DriverRegistrationFormScreen() {
           <TextInput
             style={styles.input}
             placeholderTextColor="#8E8E93"
-            placeholder="Expiration Date (MM/YY)"
+            placeholder="Expiration Date (MM/DD/YYYY)"
             value={formData.licenseInfo.expirationDate}
             onChangeText={(text) => updateFormData('licenseInfo', 'expirationDate', text)}
           />

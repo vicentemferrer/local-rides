@@ -1,99 +1,246 @@
+import { usePlacesAutocomplete } from '@/hooks/usePlacesAutocomplete';
+import { PlaceDetails } from '@/src/core/context/googlePlacesService';
+import { getCurrentLocationWithAddress } from '@/src/core/location/locationService';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
+  FlatList,
+  Keyboard,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  ScrollView,
-  FlatList,
-  Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 
-// Mock data for autocomplete suggestions
-const POPULAR_LOCATIONS = [
-  { id: '1', name: 'San Francisco Airport', address: 'San Francisco, CA 94128' },
-  { id: '2', name: 'Downtown San Francisco', address: 'Market St, San Francisco, CA' },
-  { id: '3', name: 'Golden Gate Bridge', address: 'Golden Gate Bridge, San Francisco, CA' },
-  { id: '4', name: 'Union Square', address: 'Union Square, San Francisco, CA 94108' },
-  { id: '5', name: 'Fisherman\'s Wharf', address: 'Fisherman\'s Wharf, San Francisco, CA' },
-  { id: '6', name: 'Chinatown', address: 'Chinatown, San Francisco, CA 94108' },
-  { id: '7', name: 'Mission District', address: 'Mission District, San Francisco, CA' },
-  { id: '8', name: 'Stanford University', address: 'Stanford, CA 94305' },
-];
+const RECENT_LOCATIONS_KEY = '@recent_locations';
+const MAX_RECENT_LOCATIONS = 5;
+
+interface RecentLocation {
+  id: string;
+  name: string;
+  address: string;
+  placeId?: string;
+  location?: {
+    lat: number;
+    lng: number;
+  };
+}
 
 export default function BookingScreen() {
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
+  const [originPlaceId, setOriginPlaceId] = useState<string | null>(null);
+  const [destinationPlaceId, setDestinationPlaceId] = useState<string | null>(null);
+  const [originDetails, setOriginDetails] = useState<PlaceDetails | null>(null);
+  const [destinationDetails, setDestinationDetails] = useState<PlaceDetails | null>(null);
   const [originFocused, setOriginFocused] = useState(false);
   const [destinationFocused, setDestinationFocused] = useState(false);
-  const [originSuggestions, setOriginSuggestions] = useState<typeof POPULAR_LOCATIONS>([]);
-  const [destinationSuggestions, setDestinationSuggestions] = useState<typeof POPULAR_LOCATIONS>([]);
+  const [recentLocations, setRecentLocations] = useState<RecentLocation[]>([]);
+  const [isLoadingCurrentLocation, setIsLoadingCurrentLocation] = useState(false);
+
+  // Separate hooks for origin and destination
+  const originAutocomplete = usePlacesAutocomplete({
+    debounceMs: 300,
+    minLength: 2,
+  });
+
+  const destinationAutocomplete = usePlacesAutocomplete({
+    debounceMs: 300,
+    minLength: 2,
+  });
+
+  // Load recent locations on mount
+  useEffect(() => {
+    loadRecentLocations();
+    initializeOriginWithCurrentLocation();
+  }, []);
+
+  const loadRecentLocations = async () => {
+    try {
+      const stored = await AsyncStorage.getItem(RECENT_LOCATIONS_KEY);
+      if (stored) {
+        setRecentLocations(JSON.parse(stored));
+      }
+    } catch (error) {
+      console.error('Error loading recent locations:', error);
+    }
+  };
+
+  const saveRecentLocation = async (location: RecentLocation) => {
+    try {
+      const existing = [...recentLocations];
+      
+      // Remove if already exists (to avoid duplicates)
+      const filtered = existing.filter(loc => 
+        loc.placeId ? loc.placeId !== location.placeId : loc.name !== location.name
+      );
+      
+      // Add to beginning
+      const updated = [location, ...filtered].slice(0, MAX_RECENT_LOCATIONS);
+      
+      setRecentLocations(updated);
+      await AsyncStorage.setItem(RECENT_LOCATIONS_KEY, JSON.stringify(updated));
+    } catch (_error) {
+      //console.error('Error saving recent location:', error);
+    }
+  };
+
+  const initializeOriginWithCurrentLocation = async () => {
+    setIsLoadingCurrentLocation(true);
+    try {
+      const location = await getCurrentLocationWithAddress();
+      if (location) {
+        setOrigin(location.address || 'Current Location');
+        setOriginDetails({
+          placeId: 'current_location',
+          name: location.address || 'Current Location',
+          address: location.address || 'Your current location',
+          location: {
+            lat: location.latitude,
+            lng: location.longitude,
+          },
+        });
+      }
+    } catch (_error) {
+      //console.error('Error getting current location:', error);
+    } finally {
+      setIsLoadingCurrentLocation(false);
+    }
+  };
 
   const handleOriginChange = (text: string) => {
     setOrigin(text);
-    if (text.length > 0) {
-      const filtered = POPULAR_LOCATIONS.filter(
-        (location) =>
-          location.name.toLowerCase().includes(text.toLowerCase()) ||
-          location.address.toLowerCase().includes(text.toLowerCase())
-      );
-      setOriginSuggestions(filtered);
-    } else {
-      setOriginSuggestions([]);
-    }
+    setOriginPlaceId(null);
+    originAutocomplete.fetchSuggestions(text);
   };
 
   const handleDestinationChange = (text: string) => {
     setDestination(text);
-    if (text.length > 0) {
-      const filtered = POPULAR_LOCATIONS.filter(
-        (location) =>
-          location.name.toLowerCase().includes(text.toLowerCase()) ||
-          location.address.toLowerCase().includes(text.toLowerCase())
-      );
-      setDestinationSuggestions(filtered);
-    } else {
-      setDestinationSuggestions([]);
+    setDestinationPlaceId(null);
+    destinationAutocomplete.fetchSuggestions(text);
+  };
+
+  const selectOrigin = async (placeId: string, name: string) => {
+    setOrigin(name);
+    setOriginPlaceId(placeId);
+    originAutocomplete.clearSuggestions();
+    Keyboard.dismiss();
+
+    const details = await originAutocomplete.selectPlace(placeId);
+    if (details) {
+      setOriginDetails(details);
+      
+      // Save to recent locations
+      await saveRecentLocation({
+        id: placeId,
+        name: details.name,
+        address: details.address,
+        placeId: placeId,
+        location: details.location,
+      });
     }
   };
 
-  const selectOrigin = (location: typeof POPULAR_LOCATIONS[0]) => {
-    setOrigin(location.name);
-    setOriginSuggestions([]);
+  const selectDestination = async (placeId: string, name: string) => {
+    setDestination(name);
+    setDestinationPlaceId(placeId);
+    destinationAutocomplete.clearSuggestions();
     Keyboard.dismiss();
+
+    const details = await destinationAutocomplete.selectPlace(placeId);
+    
+    if (details) {
+      setDestinationDetails(details);
+      
+      // Save to recent locations
+      await saveRecentLocation({
+        id: placeId,
+        name: details.name,
+        address: details.address,
+        placeId: placeId,
+        location: details.location,
+      });
+    }
   };
 
-  const selectDestination = (location: typeof POPULAR_LOCATIONS[0]) => {
-    setDestination(location.name);
-    setDestinationSuggestions([]);
-    Keyboard.dismiss();
+  const selectRecentLocation = async (location: RecentLocation, isOrigin: boolean) => {
+    if (isOrigin) {
+      setOrigin(location.name);
+      if (location.placeId && location.location) {
+        setOriginPlaceId(location.placeId);
+        setOriginDetails({
+          placeId: location.placeId,
+          name: location.name,
+          address: location.address,
+          location: location.location,
+        });
+      }
+    } else {
+      setDestination(location.name);
+      if (location.placeId && location.location) {
+        setDestinationPlaceId(location.placeId);
+        setDestinationDetails({
+          placeId: location.placeId,
+          name: location.name,
+          address: location.address,
+          location: location.location,
+        });
+      }
+    }
   };
 
   const handleSwapLocations = () => {
-    const temp = origin;
+    const tempText = origin;
     setOrigin(destination);
-    setDestination(temp);
+    setDestination(tempText);
+
+    const tempPlaceId = originPlaceId;
+    setOriginPlaceId(destinationPlaceId);
+    setDestinationPlaceId(tempPlaceId);
+
+    const tempDetails = originDetails;
+    setOriginDetails(destinationDetails);
+    setDestinationDetails(tempDetails);
   };
 
   const handleConfirmBooking = () => {
-    if (origin && destination) {
-      // Navigate to ride selection or confirmation page
-      console.log('Booking:', { origin, destination });
-      router.push('/'); // Replace with your ride selection route
+    if (originDetails && destinationDetails) {
+      router.push({
+        pathname: '/(app)/(tabs)/home/ride-selection',
+        params: {
+          originLat: originDetails.location.lat,
+          originLng: originDetails.location.lng,
+          originName: originDetails.name,
+          originAddress: originDetails.address,
+          destLat: destinationDetails.location.lat,
+          destLng: destinationDetails.location.lng,
+          destName: destinationDetails.name,
+          destAddress: destinationDetails.address,
+        },
+      });
     }
   };
 
   const renderSuggestion = (
-    item: typeof POPULAR_LOCATIONS[0],
-    onSelect: (location: typeof POPULAR_LOCATIONS[0]) => void
+    item: any,
+    onSelect: (placeId: string, name: string) => void,
+    isLoading: boolean
   ) => (
     <TouchableOpacity
       style={styles.suggestionItem}
-      onPress={() => onSelect(item)}
+      onPress={() => onSelect(item.placeId, item.name)}
+      onPressIn={() => {
+        // To provide immediate feedback on press
+        if (!isLoading) {
+          //console.log('Pressed suggestion:', item.name);
+        }
+      }}
       activeOpacity={0.7}
     >
       <View style={styles.suggestionIcon}>
@@ -124,6 +271,7 @@ export default function BookingScreen() {
         style={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        nestedScrollEnabled={true}
       >
         <View style={styles.inputContainer}>
           <View style={styles.inputRow}>
@@ -145,8 +293,16 @@ export default function BookingScreen() {
                   onFocus={() => setOriginFocused(true)}
                   onBlur={() => setOriginFocused(false)}
                 />
-                {origin.length > 0 && (
-                  <TouchableOpacity onPress={() => setOrigin('')}>
+                {(originAutocomplete.isLoading || isLoadingCurrentLocation) && (
+                  <ActivityIndicator size="small" color="#007AFF" />
+                )}
+                {origin.length > 0 && !originAutocomplete.isLoading && !isLoadingCurrentLocation && (
+                  <TouchableOpacity onPress={() => {
+                    setOrigin('');
+                    setOriginPlaceId(null);
+                    setOriginDetails(null);
+                    originAutocomplete.clearSuggestions();
+                  }}>
                     <Ionicons name="close-circle" size={20} color="#8E8E93" />
                   </TouchableOpacity>
                 )}
@@ -163,8 +319,16 @@ export default function BookingScreen() {
                   onFocus={() => setDestinationFocused(true)}
                   onBlur={() => setDestinationFocused(false)}
                 />
-                {destination.length > 0 && (
-                  <TouchableOpacity onPress={() => setDestination('')}>
+                {destinationAutocomplete.isLoading && (
+                  <ActivityIndicator size="small" color="#007AFF" />
+                )}
+                {destination.length > 0 && !destinationAutocomplete.isLoading && (
+                  <TouchableOpacity onPress={() => {
+                    setDestination('');
+                    setDestinationPlaceId(null);
+                    setDestinationDetails(null);
+                    destinationAutocomplete.clearSuggestions();
+                  }}>
                     <Ionicons name="close-circle" size={20} color="#8E8E93" />
                   </TouchableOpacity>
                 )}
@@ -181,44 +345,52 @@ export default function BookingScreen() {
           </View>
         </View>
 
-        {originFocused && originSuggestions.length > 0 && (
+        {originFocused && originAutocomplete.suggestions.length > 0 && (
           <View style={styles.suggestionsContainer}>
             <Text style={styles.suggestionsTitle}>Suggestions</Text>
             <FlatList
-              data={originSuggestions}
+              data={originAutocomplete.suggestions}
               keyExtractor={(item) => item.id}
-              renderItem={({ item }) => renderSuggestion(item, selectOrigin)}
+              renderItem={({ item }) => renderSuggestion(item, selectOrigin, originAutocomplete.isLoading)}
               scrollEnabled={false}
+              keyboardShouldPersistTaps="handled" 
             />
           </View>
         )}
 
-        {destinationFocused && destinationSuggestions.length > 0 && (
+        {destinationFocused && destinationAutocomplete.suggestions.length > 0 && (
           <View style={styles.suggestionsContainer}>
             <Text style={styles.suggestionsTitle}>Suggestions</Text>
             <FlatList
-              data={destinationSuggestions}
+              data={destinationAutocomplete.suggestions}
               keyExtractor={(item) => item.id}
-              renderItem={({ item }) => renderSuggestion(item, selectDestination)}
+              renderItem={({ item }) => renderSuggestion(item, selectDestination, destinationAutocomplete.isLoading)}
               scrollEnabled={false}
+              keyboardShouldPersistTaps="handled" 
             />
           </View>
         )}
 
-        {!originFocused && !destinationFocused && (
+        {originAutocomplete.error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>Error loading suggestions. Please try again.</Text>
+          </View>
+        )}
+
+        {destinationAutocomplete.error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>Error loading suggestions. Please try again.</Text>
+          </View>
+        )}
+
+        {!originFocused && !destinationFocused && recentLocations.length > 0 && (
           <View style={styles.recentContainer}>
             <Text style={styles.sectionTitle}>Recent Locations</Text>
-            {POPULAR_LOCATIONS.slice(0, 3).map((location) => (
+            {recentLocations.map((location) => (
               <TouchableOpacity
                 key={location.id}
                 style={styles.recentItem}
-                onPress={() => {
-                  if (!origin) {
-                    selectOrigin(location);
-                  } else {
-                    selectDestination(location);
-                  }
-                }}
+                onPress={() => selectRecentLocation(location, !origin || origin.length === 0)}
               >
                 <View style={styles.recentIcon}>
                   <Ionicons name="time-outline" size={20} color="#8E8E93" />
@@ -237,10 +409,10 @@ export default function BookingScreen() {
         <TouchableOpacity
           style={[
             styles.confirmButton,
-            (!origin || !destination) && styles.confirmButtonDisabled,
+            (!originDetails || !destinationDetails) && styles.confirmButtonDisabled,
           ]}
           onPress={handleConfirmBooking}
-          disabled={!origin || !destination}
+          disabled={!originDetails || !destinationDetails}
         >
           <Text style={styles.confirmButtonText}>Confirm Locations</Text>
           <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
@@ -377,6 +549,14 @@ const styles = StyleSheet.create({
   suggestionAddress: {
     fontSize: 14,
     color: '#8E8E93',
+  },
+  errorContainer: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
+  errorText: {
+    color: '#FF3B30',
+    fontSize: 14,
   },
   recentContainer: {
     paddingHorizontal: 24,

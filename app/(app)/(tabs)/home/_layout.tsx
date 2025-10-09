@@ -19,22 +19,10 @@ export default function HomeLayout() {
         }} 
       />
       <Stack.Screen 
-        name="ride-tracking" 
+        name="ride-selection" 
         options={{ 
           title: 'Your Ride',
-          headerBackVisible: false,
-          headerLargeTitle: false,
-          //headerBackTitleVisible: false,
-          gestureEnabled: false,
-        }} 
-      />
-      <Stack.Screen 
-        name="destination" 
-        options={{ 
-          title: 'Where to?',
-          headerBackVisible: false,
-          headerLargeTitle: false,
-          //headerBackTitleVisible: false,
+          headerShown: false,
         }} 
       />
       <Stack.Screen 

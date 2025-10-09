@@ -1,29 +1,49 @@
-import { useState, useCallback, useRef } from 'react';
-import { getPlacePredictions, getPlaceDetails as fetchPlaceDetails, PlacePrediction, PlaceDetails } from '@/src/core/api/placesService';
+// usePlacesAutocomplete.ts
+import { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  getPlaceAutocomplete,
+  getPlaceDetails,
+  generateSessionToken,
+  debounce,
+  PlacePrediction,
+  PlaceDetails,
+} from '../src/core/context/googlePlacesService';
 
-export interface UsePlacesAutocompleteReturn {
-  predictions: PlacePrediction[];
-  isLoading: boolean;
-  error: string | null;
-  searchPlaces: (input: string) => Promise<void>;
-  getPlaceDetails: (placeId: string) => Promise<PlaceDetails | null>;
-  clearPredictions: () => void;
+interface UsePlacesAutocompleteOptions {
+  debounceMs?: number;
+  minLength?: number;
+  location?: { lat: number; lng: number };
+  radius?: number;
 }
 
-export function usePlacesAutocomplete(): UsePlacesAutocompleteReturn {
-  const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
+interface UsePlacesAutocompleteReturn {
+  suggestions: PlacePrediction[];
+  isLoading: boolean;
+  error: Error | null;
+  fetchSuggestions: (input: string) => void;
+  selectPlace: (placeId: string) => Promise<PlaceDetails | null>;
+  clearSuggestions: () => void;
+}
+
+export const usePlacesAutocomplete = (
+  options: UsePlacesAutocompleteOptions = {}
+): UsePlacesAutocompleteReturn => {
+  const {
+    debounceMs = 300,
+    minLength = 2,
+    location,
+    radius = 50000, // 50km default radius
+  } = options;
+
+  const [suggestions, setSuggestions] = useState<PlacePrediction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const sessionTokenRef = useRef<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const sessionTokenRef = useRef<string>(generateSessionToken());
 
-  const generateSessionToken = useCallback(() => {
-    // Generate a simple session token (in production, use a proper UUID)
-    return Math.random().toString(36).substring(2, 15);
-  }, []);
-
-  const searchPlaces = useCallback(async (input: string) => {
-    if (!input.trim()) {
-      setPredictions([]);
+  const fetchSuggestionsInternal = async (input: string) => {
+    if (!input || input.length < minLength) {
+      setSuggestions([]);
+      setIsLoading(false);
       return;
     }
 
@@ -31,49 +51,59 @@ export function usePlacesAutocomplete(): UsePlacesAutocompleteReturn {
     setError(null);
 
     try {
-      // Generate session token if not exists
-      if (!sessionTokenRef.current) {
-        sessionTokenRef.current = generateSessionToken();
-      }
-
-      const results = await getPlacePredictions(
+      const results = await getPlaceAutocomplete(
         input,
-        sessionTokenRef.current
+        sessionTokenRef.current,
+        location,
+        radius
       );
-      setPredictions(results);
+      setSuggestions(results);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to search places');
-      setPredictions([]);
+      setError(err instanceof Error ? err : new Error('Failed to fetch suggestions'));
+      setSuggestions([]);
     } finally {
       setIsLoading(false);
     }
-  }, [generateSessionToken]);
+  };
 
-  const getPlaceDetails = useCallback(async (placeId: string): Promise<PlaceDetails | null> => {
+  // Create debounced version of fetch function
+  const debouncedFetch = useCallback(
+    debounce(fetchSuggestionsInternal, debounceMs),
+    [minLength, location, radius]
+  );
+
+  const fetchSuggestions = useCallback(
+    (input: string) => {
+      debouncedFetch(input);
+    },
+    [debouncedFetch]
+  );
+
+  const selectPlace = async (placeId: string): Promise<PlaceDetails | null> => {
     try {
-      const details = await fetchPlaceDetails(
-        placeId,
-        sessionTokenRef.current || undefined
-      );
+      const details = await getPlaceDetails(placeId, sessionTokenRef.current);
+      
+      // Generate new session token after completing a search session
+      sessionTokenRef.current = generateSessionToken();
+      
       return details;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to get place details');
+      setError(err instanceof Error ? err : new Error('Failed to fetch place details'));
       return null;
     }
-  }, []);
+  };
 
-  const clearPredictions = useCallback(() => {
-    setPredictions([]);
+  const clearSuggestions = useCallback(() => {
+    setSuggestions([]);
     setError(null);
-    sessionTokenRef.current = null;
   }, []);
 
   return {
-    predictions,
+    suggestions,
     isLoading,
     error,
-    searchPlaces,
-    getPlaceDetails,
-    clearPredictions,
+    fetchSuggestions,
+    selectPlace,
+    clearSuggestions,
   };
-}
+};

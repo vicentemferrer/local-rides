@@ -11,24 +11,26 @@ export default function HomeScreen() {
 	const { user, isLoading } = useAuth();
 	const { location, region } = useLocationContext();
 
-	console.log('User data:', user);
-
-	if (isLoading && user == null) {
-		return (
-			<SafeAreaView style={styles.container}>
-				<View style={styles.loadingContainer}>
-					<View style={styles.loadingContent}>
-						<View style={styles.loadingIconContainer}>
-							<Ionicons name='car-sport' size={48} color='#007AFF' />
-							<ActivityIndicator size='large' color='#007AFF' style={styles.loadingSpinner} />
-						</View>
-						<Text style={styles.loadingTitle}>Loading your ride</Text>
-						<Text style={styles.loadingSubtitle}>Please wait a moment...</Text>
-					</View>
-				</View>
-			</SafeAreaView>
-		);
-	}
+  if (isLoading && user == null) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <View style={styles.loadingContent}>
+            <View style={styles.loadingIconContainer}>
+              <Ionicons name="car-sport" size={48} color="#007AFF" />
+              <ActivityIndicator 
+                size="large" 
+                color="#007AFF" 
+                style={styles.loadingSpinner}
+              />
+            </View>
+            <Text style={styles.loadingTitle}>Loading your ride</Text>
+            <Text style={styles.loadingSubtitle}>Please wait a moment...</Text>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
 	return (
 		<SafeAreaView style={styles.container}>
