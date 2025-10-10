@@ -1,3 +1,4 @@
+import { getPlacePredictions } from '@/src/core/api/placesService';
 import { mockPlacePredictions } from './__mocks__/mockData';
 
 // fake dependencies
@@ -24,6 +25,15 @@ describe('Places Service', () => {
         ok: true, 
         json: async () => mockResponse 
       });
+
+      const result = await getPlacePredictions('New York');
+
+      expect(result).toEqual(mockPlacePredictions);
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('autocomplete/json')
+      );
     });
+
+    
   });
 });
