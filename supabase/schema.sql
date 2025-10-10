@@ -61,6 +61,15 @@ CREATE TABLE driver_documents (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 5. Driver Location table - Stores real-time driver location data (1:N with drivers)
+CREATE TABLE drivers_location (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    driver_id UUID NOT NULL REFERENCES drivers(id) ON DELETE CASCADE,
+    latitude DECIMAL(9, 6) NOT NULL,
+    longitude DECIMAL(9, 6) NOT NULL,
+    timestamp TIMESTAMP DEFAULT NOW()
+);
+
 -- Create indexes for better performance
 CREATE INDEX idx_drivers_email ON drivers(email);
 CREATE INDEX idx_drivers_phone ON drivers(phone_number);
