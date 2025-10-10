@@ -77,12 +77,15 @@ CREATE INDEX idx_drivers_user_type ON drivers(user_type);
 CREATE INDEX idx_vehicles_driver_id ON vehicles(driver_id);
 CREATE INDEX idx_vehicles_license_plate ON vehicles(license_plate);
 CREATE INDEX idx_vehicles_vehicle_type ON vehicles(vehicle_type);
+CREATE INDEX idx_drivers_location_driver_id ON drivers_location(driver_id);
+CREATE INDEX idx_drivers_location_timestamp ON drivers_location(timestamp);
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE drivers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE drivers_plates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vehicles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE driver_documents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE drivers_location ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for drivers table
 CREATE POLICY "drivers_own_data" ON drivers
