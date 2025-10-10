@@ -1,6 +1,6 @@
 import { useDestinationSearch } from '@/hooks/useDestinationSearch';
 import { getPlaceDetails } from '@/src/core/api/placesService';
-import { renderHook } from '@testing-library/react-native';
+import { act, renderHook } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 
 // fake dependencies
@@ -36,8 +36,12 @@ describe('useDestinationSearch', () => {
     expect(result.current.predictions).toEqual([]);
   });
 
+  it('updates input correctly', () => {
+    const { result } = renderHook(() => useDestinationSearch());
+    act(() => result.current.setInput('New York'));
+    expect(result.current.input).toBe('New York');
+  });
 
     
     expect(Alert.alert).toHaveBeenCalledWith('Error', 'Failed to get place details. Please try again.');
   });
-;
