@@ -28,4 +28,11 @@ describe('SearchBar', () => {
     expect(UNSAFE_getByType('ActivityIndicator')).toBeTruthy();
   });
 
- 
+  it('hides loading indicator when not loading', () => {
+    const { UNSAFE_queryByType } = render(
+      <SearchBar value="" onChangeText={jest.fn()} isLoading={false} />
+    );
+    expect(UNSAFE_queryByType('ActivityIndicator')).toBeFalsy();
+  });
+
+});
