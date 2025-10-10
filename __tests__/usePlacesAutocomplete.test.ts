@@ -24,6 +24,15 @@ describe('usePlacesAutocomplete', () => {
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBeNull();
   });
+  it('searches places successfully', async () => {
+    mockGetPlacePredictions.mockResolvedValue(mockPlacePredictions);
+    const { result } = renderHook(() => usePlacesAutocomplete());
+    
+    await act(async () => result.current.searchPlaces('New'));
+    
+    expect(result.current.predictions).toEqual(mockPlacePredictions);
+    expect(result.current.isLoading).toBe(false);
+  });
 
  
   });
