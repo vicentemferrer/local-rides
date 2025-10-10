@@ -52,4 +52,17 @@ describe('usePlacesAutocomplete', () => {
     expect(result.current.error).toBeNull();
   });
 
+  it('gets place details successfully', async () => {
+    mockGetPlaceDetails.mockResolvedValue(mockPlaceDetails);
+    const { result } = renderHook(() => usePlacesAutocomplete());
+    
+    let placeDetails;
+    await act(async () => { 
+      placeDetails = await result.current.getPlaceDetails('test-id'); 
+    });
+    
+    expect(placeDetails).toEqual(mockPlaceDetails);
+  });
+
+
   });
