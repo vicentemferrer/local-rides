@@ -34,6 +34,13 @@ describe('Places Service', () => {
       );
     });
 
-    
+    it('throws error for failed request', async () => {
+      (fetch as jest.Mock).mockResolvedValueOnce({ ok: false });
+
+      await expect(getPlacePredictions('Invalid')).rejects.toThrow(
+        'Failed to fetch place predictions'
+      );
+    });
+
   });
 });
