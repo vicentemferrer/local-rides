@@ -169,6 +169,13 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "drivers_location_driver_id_fkey"
+            columns: ["id"]
+            isOneToOne: false
+            referencedRelation: "drivers_location"
+            referencedColumns: ["driver_id"]
+          }
         ]
       }
       drivers_plates: {
