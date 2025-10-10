@@ -13,3 +13,15 @@ describe('SuggestionsList', () => {
     expect(getByText('Newark')).toBeTruthy();
     expect(getByText('NJ, USA')).toBeTruthy();
   });
+
+  it('calls onSelect when prediction is tapped', () => {
+    const mockOnSelect = jest.fn();
+    const { getByText } = render(
+      <SuggestionsList predictions={mockPlacePredictions} onSelect={mockOnSelect} />
+    );
+    
+    fireEvent.press(getByText('New York'));
+    expect(mockOnSelect).toHaveBeenCalledWith(mockPlacePredictions[0]);
+  });
+
+ 
