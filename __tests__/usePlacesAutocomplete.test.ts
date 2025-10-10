@@ -24,6 +24,7 @@ describe('usePlacesAutocomplete', () => {
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBeNull();
   });
+
   it('searches places successfully', async () => {
     mockGetPlacePredictions.mockResolvedValue(mockPlacePredictions);
     const { result } = renderHook(() => usePlacesAutocomplete());
@@ -33,6 +34,5 @@ describe('usePlacesAutocomplete', () => {
     expect(result.current.predictions).toEqual(mockPlacePredictions);
     expect(result.current.isLoading).toBe(false);
   });
-
  
   });
