@@ -59,4 +59,10 @@ describe('SearchBar', () => {
     expect(mockOnChange).toHaveBeenNthCalledWith(3, 'New York, NY');
   });
 
+  it('maintains value when not changed', () => {
+    const { getByDisplayValue } = render(
+      <SearchBar value="Static Value" onChangeText={jest.fn()} />
+    );
+    expect(getByDisplayValue('Static Value')).toBeTruthy();
+  });
 });
