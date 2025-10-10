@@ -24,4 +24,11 @@ describe('SuggestionsList', () => {
     expect(mockOnSelect).toHaveBeenCalledWith(mockPlacePredictions[0]);
   });
 
+  it('renders empty list when no predictions', () => {
+    const { queryByText } = render(
+      <SuggestionsList predictions={[]} onSelect={jest.fn()} />
+    );
+    expect(queryByText('New York')).toBeFalsy();
+  });
+
  
