@@ -1,6 +1,7 @@
 import { SearchBar } from '@/src/shared/components/SearchBar';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
+import { ActivityIndicator } from 'react-native';
 
 describe('SearchBar', () => {
   it('renders with placeholder and value', () => {
@@ -25,14 +26,14 @@ describe('SearchBar', () => {
     const { UNSAFE_getByType } = render(
       <SearchBar value="" onChangeText={jest.fn()} isLoading={true} />
     );
-    expect(UNSAFE_getByType('ActivityIndicator')).toBeTruthy();
+    expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy();
   });
 
   it('hides loading indicator when not loading', () => {
     const { UNSAFE_queryByType } = render(
       <SearchBar value="" onChangeText={jest.fn()} isLoading={false} />
     );
-    expect(UNSAFE_queryByType('ActivityIndicator')).toBeFalsy();
+    expect(UNSAFE_queryByType(ActivityIndicator)).toBeFalsy();
   });
 
   it('uses default placeholder when none provided', () => {
@@ -50,7 +51,7 @@ describe('SearchBar', () => {
     
     const input = getByPlaceholderText('Search...');
     fireEvent.changeText(input, 'New');
-    fireEvent.changeText(input, 'New York');
+    fireEvent.changeText(input, 'New York');    
     fireEvent.changeText(input, 'New York, NY');
     
     expect(mockOnChange).toHaveBeenCalledTimes(3);
