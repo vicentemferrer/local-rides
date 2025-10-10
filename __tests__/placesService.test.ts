@@ -92,6 +92,20 @@ describe('Places Service', () => {
       );
     });
 
-    
+    it('includes session token when provided', async () => {
+      const mockResponse = { result: mockPlaceDetails };
+      (fetch as jest.Mock).mockResolvedValueOnce({ 
+        ok: true, 
+        json: async () => mockResponse 
+      });
+
+      await getPlaceDetails('test-place-id', 'test-session-token');
+
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('sessiontoken=test-session-token')
+      );
+    });
+
+  
   });
 });
