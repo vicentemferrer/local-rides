@@ -10,4 +10,15 @@ describe('SearchBar', () => {
     expect(getByPlaceholderText('Search...')).toBeTruthy();
     expect(getByDisplayValue('New York')).toBeTruthy();
   });
-});
+
+  it('calls onChangeText on input change', () => {
+    const mockOnChange = jest.fn();
+    const { getByPlaceholderText } = render(
+      <SearchBar value="" onChangeText={mockOnChange} placeholder="Search..." />
+    );
+    
+    fireEvent.changeText(getByPlaceholderText('Search...'), 'New York');
+    expect(mockOnChange).toHaveBeenCalledWith('New York');
+  });
+
+  
