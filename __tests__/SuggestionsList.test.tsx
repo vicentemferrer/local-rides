@@ -45,4 +45,15 @@ describe('SuggestionsList', () => {
     expect(mockOnSelect).toHaveBeenNthCalledWith(2, mockPlacePredictions[1]);
   });
 
+  it('renders single prediction correctly', () => {
+    const singlePrediction = [mockPlacePredictions[0]];
+    const { getByText, queryByText } = render(
+      <SuggestionsList predictions={singlePrediction} onSelect={jest.fn()} />
+    );
+    
+    expect(getByText('New York')).toBeTruthy();
+    expect(getByText('NY, USA')).toBeTruthy();
+    expect(queryByText('Newark')).toBeFalsy();
+  });
+
  
