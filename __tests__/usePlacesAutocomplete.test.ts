@@ -1,6 +1,7 @@
 import { usePlacesAutocomplete } from '@/hooks/usePlacesAutocomplete';
 import { getPlaceDetails, getPlacePredictions } from '@/src/core/api/placesService';
 import { act, renderHook } from '@testing-library/react-native';
+import { mockPlaceDetails, mockPlacePredictions } from './__mocks__/mockData';
 
 // fake dependencies
 jest.mock('expo-constants', () => ({
@@ -73,5 +74,13 @@ describe('usePlacesAutocomplete', () => {
     expect(mockGetPlacePredictions).not.toHaveBeenCalled();
   });
 
-
+  it('handles whitespace-only search input', async () => {
+    const { result } = renderHook(() => usePlacesAutocomplete());
+    
+    await act(async () => result.current.searchPlaces('   '));
+    
+    expect(result.current.predictions).toEqual([]);
+    expect(mockGetPlacePredictions).not.toHaveBeenCalled();
+ 
   });
+});
