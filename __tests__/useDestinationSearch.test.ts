@@ -2,6 +2,7 @@ import { useDestinationSearch } from '@/hooks/useDestinationSearch';
 import { getPlaceDetails } from '@/src/core/api/placesService';
 import { act, renderHook } from '@testing-library/react-native';
 import { Alert } from 'react-native';
+import { mockPlaceDetails, mockPlacePredictions } from './__mocks__/mockData';
 
 // fake dependencies
 jest.mock('expo-constants', () => ({
