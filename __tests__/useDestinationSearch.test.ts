@@ -42,6 +42,19 @@ describe('useDestinationSearch', () => {
     expect(result.current.input).toBe('New York');
   });
 
+  it('handles successful place selection', async () => {
+    const mockPlace = mockPlacePredictions[0];
+    mockGetPlaceDetails.mockResolvedValue(mockPlaceDetails);
+    const { result } = renderHook(() => useDestinationSearch());
+    
+    await act(async () => result.current.handlePlaceSelect(mockPlace));
+    
+    expect(result.current.input).toBe('New York, NY, USA');
+    expect(Alert.alert).toHaveBeenCalledWith('Destination Selected', 
+      `You selected: New York\nAddress: New York, NY, USA`, 
+      [{ text: 'OK', onPress: expect.any(Function) }]);
+  });
+
     
     expect(Alert.alert).toHaveBeenCalledWith('Error', 'Failed to get place details. Please try again.');
   });
