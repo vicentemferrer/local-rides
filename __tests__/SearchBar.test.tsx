@@ -42,4 +42,21 @@ describe('SearchBar', () => {
     expect(getByPlaceholderText('Search...')).toBeTruthy();
   });
 
+  it('handles multiple text changes', () => {
+    const mockOnChange = jest.fn();
+    const { getByPlaceholderText } = render(
+      <SearchBar value="" onChangeText={mockOnChange} placeholder="Search..." />
+    );
+    
+    const input = getByPlaceholderText('Search...');
+    fireEvent.changeText(input, 'New');
+    fireEvent.changeText(input, 'New York');
+    fireEvent.changeText(input, 'New York, NY');
+    
+    expect(mockOnChange).toHaveBeenCalledTimes(3);
+    expect(mockOnChange).toHaveBeenNthCalledWith(1, 'New');
+    expect(mockOnChange).toHaveBeenNthCalledWith(2, 'New York');
+    expect(mockOnChange).toHaveBeenNthCalledWith(3, 'New York, NY');
+  });
+
 });
