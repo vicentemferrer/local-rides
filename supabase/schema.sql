@@ -109,6 +109,13 @@ CREATE POLICY "vehicles_public_read" ON vehicles
 CREATE POLICY "drivers_own_documents" ON driver_documents
     FOR ALL USING (auth.uid() = driver_id);
 
+-- RLS Policies for drivers_location table
+CREATE POLICY "drivers_own_location" ON drivers_location
+    FOR ALL USING (auth.uid() = driver_id);
+
+CREATE POLICY "drivers_location_public_read" ON drivers_location
+    FOR SELECT USING (true); -- Allow reading location data for ride matching
+
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
