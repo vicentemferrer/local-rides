@@ -21,4 +21,11 @@ describe('SearchBar', () => {
     expect(mockOnChange).toHaveBeenCalledWith('New York');
   });
 
-  
+  it('shows loading indicator when loading', () => {
+    const { UNSAFE_getByType } = render(
+      <SearchBar value="" onChangeText={jest.fn()} isLoading={true} />
+    );
+    expect(UNSAFE_getByType('ActivityIndicator')).toBeTruthy();
+  });
+
+ 
