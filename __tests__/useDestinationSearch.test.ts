@@ -1,3 +1,8 @@
+import { useDestinationSearch } from '@/hooks/useDestinationSearch';
+import { getPlaceDetails } from '@/src/core/api/placesService';
+import { renderHook } from '@testing-library/react-native';
+import { Alert } from 'react-native';
+
 // fake dependencies
 jest.mock('expo-constants', () => ({
   expoConfig: {
@@ -17,3 +22,22 @@ jest.mock('react-native', () => ({
     alert: jest.fn(),
   },
 }));
+
+
+const mockGetPlaceDetails = getPlaceDetails as jest.MockedFunction<typeof getPlaceDetails>;
+
+describe('useDestinationSearch', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('initializes with empty state', () => {
+    const { result } = renderHook(() => useDestinationSearch());
+    expect(result.current.input).toBe('');
+    expect(result.current.showSuggestions).toBe(false);
+    expect(result.current.predictions).toEqual([]);
+  });
+
+
+    
+    expect(Alert.alert).toHaveBeenCalledWith('Error', 'Failed to get place details. Please try again.');
+  });
+;
