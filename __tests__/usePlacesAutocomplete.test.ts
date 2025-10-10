@@ -1,6 +1,6 @@
 import { usePlacesAutocomplete } from '@/hooks/usePlacesAutocomplete';
 import { getPlaceDetails, getPlacePredictions } from '@/src/core/api/placesService';
-import { renderHook } from '@testing-library/react-native';
+import { act, renderHook } from '@testing-library/react-native';
 
 // fake dependencies
 jest.mock('expo-constants', () => ({
@@ -34,5 +34,15 @@ describe('usePlacesAutocomplete', () => {
     expect(result.current.predictions).toEqual(mockPlacePredictions);
     expect(result.current.isLoading).toBe(false);
   });
- 
+
+  it('handles search errors', async () => {
+    mockGetPlacePredictions.mockRejectedValue(new Error('API Error'));
+    const { result } = renderHook(() => usePlacesAutocomplete());
+    
+    await act(async () => result.current.searchPlaces('Invalid'));
+    
+    expect(result.current.predictions).toEqual([]);
+    expect(result.current.error).toBe('API Error');
+  });
+
   });
