@@ -55,6 +55,14 @@ describe('useDestinationSearch', () => {
       [{ text: 'OK', onPress: expect.any(Function) }]);
   });
 
+  it('handles place selection errors', async () => {
+    const mockPlace = { place_id: 'invalid', description: 'Invalid', structured_formatting: { main_text: 'Invalid', secondary_text: '' } };
+    mockGetPlaceDetails.mockRejectedValue(new Error('API Error'));
+    const { result } = renderHook(() => useDestinationSearch());
+    
+    await act(async () => result.current.handlePlaceSelect(mockPlace));
+
     
     expect(Alert.alert).toHaveBeenCalledWith('Error', 'Failed to get place details. Please try again.');
   });
+});
