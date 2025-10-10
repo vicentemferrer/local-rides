@@ -106,6 +106,10 @@ describe('Places Service', () => {
       );
     });
 
-  
+    it('handles network errors', async () => {
+      (fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+
+      await expect(getPlaceDetails('test-id')).rejects.toThrow('Network error');
+    });
   });
 });
