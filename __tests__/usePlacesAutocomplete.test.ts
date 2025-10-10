@@ -64,5 +64,14 @@ describe('usePlacesAutocomplete', () => {
     expect(placeDetails).toEqual(mockPlaceDetails);
   });
 
+  it('handles empty search input', async () => {
+    const { result } = renderHook(() => usePlacesAutocomplete());
+    
+    await act(async () => result.current.searchPlaces(''));
+    
+    expect(result.current.predictions).toEqual([]);
+    expect(mockGetPlacePredictions).not.toHaveBeenCalled();
+  });
+
 
   });
