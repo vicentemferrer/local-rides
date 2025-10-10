@@ -84,5 +84,14 @@ describe('Places Service', () => {
       );
     });
 
+    it('throws error for failed request', async () => {
+      (fetch as jest.Mock).mockResolvedValueOnce({ ok: false });
+
+      await expect(getPlaceDetails('invalid-id')).rejects.toThrow(
+        'Failed to fetch place details'
+      );
+    });
+
+    
   });
 });
