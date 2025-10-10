@@ -1,3 +1,4 @@
+import { mockPlacePredictions } from './__mocks__/mockData';
 
 // fake dependencies
 jest.mock('expo-constants', () => ({
@@ -13,6 +14,16 @@ global.fetch = jest.fn();
 
 describe('Places Service', () => {
   beforeEach(() => jest.clearAllMocks());
-  it('should fetch place predictions successfully', async () => {
+
+  describe('getPlacePredictions', () => {
+    it('returns predictions for valid input', async () => {
+      const mockResponse = {
+        predictions: mockPlacePredictions
+      };
+      (fetch as jest.Mock).mockResolvedValueOnce({ 
+        ok: true, 
+        json: async () => mockResponse 
+      });
+    });
   });
 });
