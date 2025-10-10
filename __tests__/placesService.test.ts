@@ -68,5 +68,21 @@ describe('Places Service', () => {
     });
   });
 
+  describe('getPlaceDetails', () => {
+    it('returns place details for valid place ID', async () => {
+      const mockResponse = { result: mockPlaceDetails };
+      (fetch as jest.Mock).mockResolvedValueOnce({ 
+        ok: true, 
+        json: async () => mockResponse 
+      });
+
+      const result = await getPlaceDetails('test-place-id');
+
+      expect(result).toEqual(mockPlaceDetails);
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('details/json')
+      );
+    });
+
   });
 });
