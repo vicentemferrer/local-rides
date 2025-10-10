@@ -10,3 +10,9 @@ jest.mock('expo-constants', () => ({
 
 // fake fetch
 global.fetch = jest.fn();
+
+describe('Places Service', () => {
+  beforeEach(() => jest.clearAllMocks());
+  it('should fetch place predictions successfully', async () => {
+  });
+});
