@@ -77,6 +77,38 @@ export type Database = {
         }
         Relationships: []
       }
+      drivers_location: {
+        Row: {
+          id: string
+          driver_id: string
+          latitude: number
+          longitude: number
+          timestamp: string
+        }
+        Insert: {
+          id?: string
+          driver_id: string
+          latitude: number
+          longitude: number
+          timestamp?: string
+        }
+        Update: {
+          id?: string
+          driver_id?: string
+          latitude?: number
+          longitude?: number
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drivers_location_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       driver_signup_status: {
         Row: {
           created_at: string
