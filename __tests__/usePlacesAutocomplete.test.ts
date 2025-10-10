@@ -45,4 +45,11 @@ describe('usePlacesAutocomplete', () => {
     expect(result.current.error).toBe('API Error');
   });
 
+  it('clears predictions', () => {
+    const { result } = renderHook(() => usePlacesAutocomplete());
+    act(() => result.current.clearPredictions());
+    expect(result.current.predictions).toEqual([]);
+    expect(result.current.error).toBeNull();
+  });
+
   });
