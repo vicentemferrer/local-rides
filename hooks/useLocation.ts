@@ -3,6 +3,7 @@ import {
 	getCurrentPositionAsync,
 	LocationObject,
 	LocationSubscription,
+	requestBackgroundPermissionsAsync,
 	requestForegroundPermissionsAsync,
 	watchPositionAsync
 } from 'expo-location';
@@ -16,8 +17,9 @@ export function useLocation() {
 
 	useEffect(() => {
 		(async () => {
-			const { status } = await requestForegroundPermissionsAsync();
-			if (status !== 'granted') {
+			const { status: foreground } = await requestForegroundPermissionsAsync();
+			const { status: background } = await requestBackgroundPermissionsAsync();
+			if (foreground !== 'granted' || background !== 'granted') {
 				setLocationError('Permission to access location was denied');
 				return;
 			}

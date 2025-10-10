@@ -5,59 +5,65 @@ import { Alert } from 'react-native';
 import { usePlacesAutocomplete } from './usePlacesAutocomplete';
 
 export function useDestinationSearch() {
-  const [input, setInput] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const placesHook = usePlacesAutocomplete();
-  const { predictions, isLoading: isSearching, error, searchPlaces, clearPredictions } = placesHook;
-  const debounceRef = useRef<number>();
+	const [input, setInput] = useState('');
+	const [showSuggestions, setShowSuggestions] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 
-  // Debounced search
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
+	const placesHook = usePlacesAutocomplete();
+	const {
+		suggestions,
+		isLoading: isSearching,
+		error,
+		fetchSuggestions,
+		clearSuggestions
+	} = placesHook;
+	const debounceRef = useRef<number>(100);
 
-    debounceRef.current = setTimeout(() => {
-      if (input.trim()) {
-        searchPlaces(input);
-        setShowSuggestions(true);
-      } else {
-        clearPredictions();
-        setShowSuggestions(false);
-      }
-    }, 300);
+	// Debounced search
+	useEffect(() => {
+		if (debounceRef.current) clearTimeout(debounceRef.current);
 
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [input, searchPlaces, clearPredictions]);
+		debounceRef.current = setTimeout(() => {
+			if (input.trim()) {
+				fetchSuggestions(input);
+				setShowSuggestions(true);
+			} else {
+				clearSuggestions();
+				setShowSuggestions(false);
+			}
+		}, 300);
 
-  const handlePlaceSelect = async (place: PlacePrediction) => {
-    setInput(place.description);
-    setShowSuggestions(false);
-    setIsLoading(true);
+		return () => {
+			if (debounceRef.current) clearTimeout(debounceRef.current);
+		};
+	}, [input, fetchSuggestions, clearSuggestions]);
 
-    try {
-      const placeDetails = await getPlaceDetails(place.place_id);
-      Alert.alert(
-        'Destination Selected',
-        `You selected: ${placeDetails.name}\nAddress: ${placeDetails.formatted_address}`,
-        [{ text: 'OK', onPress: () => router.back() }]
-      );
-    } catch (error) {
-      Alert.alert('Error', 'Failed to get place details. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+	const handlePlaceSelect = async (place: PlacePrediction) => {
+		setInput(place.description);
+		setShowSuggestions(false);
+		setIsLoading(true);
 
-  return {
-    input,
-    setInput,
-    showSuggestions,
-    predictions,
-    isSearching,
-    error,
-    handlePlaceSelect,
-  };
+		try {
+			const placeDetails = await getPlaceDetails(place.place_id);
+			Alert.alert(
+				'Destination Selected',
+				`You selected: ${placeDetails.name}\nAddress: ${placeDetails.formatted_address}`,
+				[{ text: 'OK', onPress: () => router.back() }]
+			);
+		} catch (error) {
+			Alert.alert('Error', 'Failed to get place details. Please try again.');
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	return {
+		input,
+		setInput,
+		showSuggestions,
+		suggestions,
+		isSearching,
+		error,
+		handlePlaceSelect
+	};
 }
