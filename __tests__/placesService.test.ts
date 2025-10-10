@@ -42,5 +42,17 @@ describe('Places Service', () => {
       );
     });
 
+    it('handles empty predictions response', async () => {
+      const mockResponse = { predictions: [] };
+      (fetch as jest.Mock).mockResolvedValueOnce({ 
+        ok: true, 
+        json: async () => mockResponse 
+      });
+
+      const result = await getPlacePredictions('NonExistentPlace');
+      expect(result).toEqual([]);
+    });
+
+   
   });
 });
