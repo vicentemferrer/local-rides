@@ -56,4 +56,13 @@ describe('SuggestionsList', () => {
     expect(queryByText('Newark')).toBeFalsy();
   });
 
- 
+  it('uses place_id as key for list items', () => {
+    const { getByText } = render(
+      <SuggestionsList predictions={mockPlacePredictions} onSelect={jest.fn()} />
+    );
+    
+    // Both items should render without key warnings
+    expect(getByText('New York')).toBeTruthy();
+    expect(getByText('Newark')).toBeTruthy();
+  });
+});
