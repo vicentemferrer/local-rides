@@ -35,4 +35,11 @@ describe('SearchBar', () => {
     expect(UNSAFE_queryByType('ActivityIndicator')).toBeFalsy();
   });
 
+  it('uses default placeholder when none provided', () => {
+    const { getByPlaceholderText } = render(
+      <SearchBar value="" onChangeText={jest.fn()} />
+    );
+    expect(getByPlaceholderText('Search...')).toBeTruthy();
+  });
+
 });
