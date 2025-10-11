@@ -1,5 +1,7 @@
 import { getPlaceDetails, getPlacePredictions } from "@/src/core/api/placesService";
-import { fireEvent } from "@testing-library/react-native";
+import { SearchBar } from "@/src/shared/components/SearchBar";
+import { SuggestionsList } from "@/src/shared/components/SuggestionsList";
+import { fireEvent, render } from "@testing-library/react-native";
 import { mockPlaceDetails, mockPlacePredictions } from "./__mocks__/mockData";
 
 // fake dependencies
@@ -185,7 +187,3 @@ describe('Destination Search Integration', () => {
             expect(getByText('New York')).toBeTruthy();
           });
         });
-        
-     
-      
- });
