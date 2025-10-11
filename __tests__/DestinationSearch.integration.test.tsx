@@ -1,3 +1,6 @@
+import { getPlaceDetails, getPlacePredictions } from "@/src/core/api/placesService";
+import { fireEvent } from "@testing-library/react-native";
+import { mockPlaceDetails, mockPlacePredictions } from "./__mocks__/mockData";
 
 // fake dependencies
 jest.mock('expo-constants', () => ({
@@ -70,4 +73,19 @@ describe('Destination Search Integration', () => {
         />
       </>
     );
-    
+
+       // simulate user typing
+       const searchInput = getByPlaceholderText('Search for a place...');
+       fireEvent.changeText(searchInput, 'New York');
+       
+       // verify onChange was called
+       expect(mockOnChange).toHaveBeenCalledWith('New York');
+       
+       // simulate selecting a suggestion
+       fireEvent.press(getByText('New York'));
+   
+       // verify onSelect was called with correct data
+       expect(mockOnSelect).toHaveBeenCalledWith(mockPlacePredictions[0]);
+     });
+   
+ });
