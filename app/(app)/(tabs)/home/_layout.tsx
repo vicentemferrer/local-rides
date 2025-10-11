@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import React from 'react';
 
 export default function HomeLayout() {
   return (
@@ -14,28 +15,14 @@ export default function HomeLayout() {
         name="booking" 
         options={{ 
           title: 'Book a Ride',
-          headerBackVisible: false,
-          headerLargeTitle: false,
-          //headerBackTitleVisible: false,
+          headerShown: false,
         }} 
       />
       <Stack.Screen 
-        name="ride-tracking" 
+        name="ride-selection" 
         options={{ 
           title: 'Your Ride',
-          headerBackVisible: false,
-          headerLargeTitle: false,
-          //headerBackTitleVisible: false,
-          gestureEnabled: false,
-        }} 
-      />
-      <Stack.Screen 
-        name="destination" 
-        options={{ 
-          title: 'Where to?',
-          headerBackVisible: false,
-          headerLargeTitle: false,
-          //headerBackTitleVisible: false,
+          headerShown: false,
         }} 
       />
       <Stack.Screen 
