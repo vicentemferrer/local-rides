@@ -50,3 +50,24 @@ describe('Destination Search Integration', () => {
     expect(getByText('NY, USA')).toBeTruthy();
   });
 
+  it('handles complete search flow with API integration', async () => {
+    mockGetPlacePredictions.mockResolvedValue(mockPlacePredictions);
+    mockGetPlaceDetails.mockResolvedValue(mockPlaceDetails);
+
+    const mockOnSelect = jest.fn();
+    const mockOnChange = jest.fn();
+
+    const { getByPlaceholderText, getByText } = render(
+      <>
+        <SearchBar 
+          value="" 
+          onChangeText={mockOnChange} 
+          placeholder="Search for a place..." 
+        />
+        <SuggestionsList 
+          predictions={mockPlacePredictions} 
+          onSelect={mockOnSelect} 
+        />
+      </>
+    );
+    
