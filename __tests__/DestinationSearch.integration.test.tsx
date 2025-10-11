@@ -160,5 +160,32 @@ describe('Destination Search Integration', () => {
              // Verify components still render even with API errors
              expect(getByPlaceholderText('Search for a place...')).toBeTruthy();
            });
+
+           it('maintains component state consistency', () => {
+            const mockOnSelect = jest.fn();
+            const mockOnChange = jest.fn();
+        
+            const { getByPlaceholderText, getByText } = render(
+              <>
+                <SearchBar 
+                  value="Central Park" 
+                  onChangeText={mockOnChange} 
+                  placeholder="Search for a place..." 
+                />
+                <SuggestionsList 
+                  predictions={mockPlacePredictions} 
+                  onSelect={mockOnSelect} 
+                />
+              </>
+            );
+            
+            // Verify consistent state
+            const searchInput = getByPlaceholderText('Search for a place...');
+            expect(searchInput.props.value).toBe('Central Park');
+            expect(getByText('New York')).toBeTruthy();
+          });
+        });
+        
+     
       
  });
