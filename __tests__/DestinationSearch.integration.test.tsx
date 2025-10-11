@@ -87,5 +87,25 @@ describe('Destination Search Integration', () => {
        // verify onSelect was called with correct data
        expect(mockOnSelect).toHaveBeenCalledWith(mockPlacePredictions[0]);
      });
+
+     it('handles loading state integration', () => {
+        const mockOnSelect = jest.fn();
+        const mockOnChange = jest.fn();
+    
+        const { getByPlaceholderText } = render(
+          <>
+            <SearchBar 
+              value="Searching..." 
+              onChangeText={mockOnChange} 
+              placeholder="Search for a place..." 
+              isLoading={true}
+            />
+            <SuggestionsList 
+              predictions={[]} 
+              onSelect={mockOnSelect} 
+            />
+          </>
+        );
+        
    
  });
