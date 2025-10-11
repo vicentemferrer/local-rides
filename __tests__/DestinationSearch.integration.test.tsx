@@ -107,5 +107,26 @@ describe('Destination Search Integration', () => {
           </>
         );
         
-   
+          // verify loading state logic
+          const searchInput = getByPlaceholderText('Search for a place...');
+          expect(searchInput.props.value).toBe('Searching...');
+        });
+      
+        it('handles empty suggestions gracefully', () => {
+          const mockOnSelect = jest.fn();
+          const mockOnChange = jest.fn();
+      
+          const { getByPlaceholderText, queryByText } = render(
+            <>
+              <SearchBar 
+                value="No results" 
+                onChangeText={mockOnChange} 
+                placeholder="Search for a place..." 
+              />
+              <SuggestionsList 
+                predictions={[]} 
+                onSelect={mockOnSelect} 
+              />
+            </>
+          );
  });
