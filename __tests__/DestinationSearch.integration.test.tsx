@@ -42,3 +42,11 @@ describe('Destination Search Integration', () => {
       </>
     );
     
+    // verify SearchBar renders logic
+    expect(getByPlaceholderText('Search for a place...')).toBeTruthy();
+    
+    // verify SuggestionsList renders logic
+    expect(getByText('New York')).toBeTruthy();
+    expect(getByText('NY, USA')).toBeTruthy();
+  });
+
