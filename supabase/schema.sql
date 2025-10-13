@@ -61,6 +61,15 @@ CREATE TABLE driver_documents (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 5. Driver Location table - Stores real-time driver location data (1:N with drivers)
+CREATE TABLE drivers_location (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    driver_id UUID NOT NULL REFERENCES drivers(id) ON DELETE CASCADE,
+    latitude DECIMAL(9, 6) NOT NULL,
+    longitude DECIMAL(9, 6) NOT NULL,
+    timestamp TIMESTAMP DEFAULT NOW()
+);
+
 -- Create indexes for better performance
 CREATE INDEX idx_drivers_email ON drivers(email);
 CREATE INDEX idx_drivers_phone ON drivers(phone_number);
@@ -68,12 +77,15 @@ CREATE INDEX idx_drivers_user_type ON drivers(user_type);
 CREATE INDEX idx_vehicles_driver_id ON vehicles(driver_id);
 CREATE INDEX idx_vehicles_license_plate ON vehicles(license_plate);
 CREATE INDEX idx_vehicles_vehicle_type ON vehicles(vehicle_type);
+CREATE INDEX idx_drivers_location_driver_id ON drivers_location(driver_id);
+CREATE INDEX idx_drivers_location_timestamp ON drivers_location(timestamp);
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE drivers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE drivers_plates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vehicles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE driver_documents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE drivers_location ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for drivers table
 CREATE POLICY "drivers_own_data" ON drivers
@@ -96,6 +108,13 @@ CREATE POLICY "vehicles_public_read" ON vehicles
 -- RLS Policies for driver_documents table
 CREATE POLICY "drivers_own_documents" ON driver_documents
     FOR ALL USING (auth.uid() = driver_id);
+
+-- RLS Policies for drivers_location table
+CREATE POLICY "drivers_own_location" ON drivers_location
+    FOR ALL USING (auth.uid() = driver_id);
+
+CREATE POLICY "drivers_location_public_read" ON drivers_location
+    FOR SELECT USING (true); -- Allow reading location data for ride matching
 
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
