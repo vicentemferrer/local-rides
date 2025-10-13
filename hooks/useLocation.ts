@@ -47,7 +47,7 @@ export function useLocation() {
 			subscription = await watchPositionAsync(
 				{
 					accuracy: Accuracy.High,
-					timeInterval: 1000,
+					timeInterval: 5000,
 					distanceInterval: 5
 				},
 				(loc) => {
