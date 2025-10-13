@@ -3,82 +3,140 @@ import { LocationTracker } from '@/src/components/LocationTracker';
 import { useLocationContext } from '@/src/core/context/LocationContext';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import MapViewClustering from 'react-native-map-clustering';
+import { Marker } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
-	const { user, isLoading } = useAuth();
-	const { location, region } = useLocationContext();
+  const { user, isLoading } = useAuth();
+  const { location, region } = useLocationContext();
+  const [zoom, setZoom] = useState(14);
+  const mapRef = useRef(null);
 
-	if (isLoading && user == null) {
-		return (
-			<SafeAreaView style={styles.container}>
-				<View style={styles.loadingContainer}>
-					<View style={styles.loadingContent}>
-						<View style={styles.loadingIconContainer}>
-							<Ionicons name='car-sport' size={48} color='#007AFF' />
-							<ActivityIndicator size='large' color='#007AFF' style={styles.loadingSpinner} />
-						</View>
-						<Text style={styles.loadingTitle}>Loading your ride</Text>
-						<Text style={styles.loadingSubtitle}>Please wait a moment...</Text>
-					</View>
-				</View>
-			</SafeAreaView>
-		);
-	}
+  // Example other user markers (replace with Supabase data)
+  const [userMarkers, setUserMarkers] = useState([
+    { id: 1, name: 'Driver A', latitude: 37.78845, longitude: -122.4324 },
+    { id: 2, name: 'Driver B', latitude: 37.78925, longitude: -122.4354 },
+    { id: 3, name: 'Driver C', latitude: 37.78525, longitude: -122.4374 },
+  ]);
 
-	return (
-		<SafeAreaView style={styles.container}>
-			<View style={styles.header}>
-				<Text style={styles.greeting}>
-					{user?.userType == 'driver' ? `Hello, ${user?.firstName}!` : `Welcome!`}
-				</Text>
-			</View>
+  // Handle zoom in/out
+  const handleZoom = (direction: 'in' | 'out') => {
+    const newZoom = direction === 'in' ? zoom + 1 : zoom - 1;
+    setZoom(newZoom);
+    if (mapRef.current) {
+      const newDelta = 0.0922 / Math.pow(2, newZoom - 14);
+      mapRef.current.animateToRegion({
+        ...region,
+        latitudeDelta: newDelta,
+        longitudeDelta: newDelta,
+      });
+    }
+  };
 
-			{user?.userType === 'rider' && (
-				<View style={styles.searchBarContainer}>
-					<TouchableOpacity
-						style={styles.searchBar}
-						onPress={() => router.push('/(app)/(tabs)/home/booking')}
-						activeOpacity={0.7}>
-						<Ionicons name='search' size={20} color='#8E8E93' style={styles.searchIcon} />
-						<Text style={styles.searchPlaceholder}>Where are you going?</Text>
-					</TouchableOpacity>
-				</View>
-			)}
+  if (isLoading && user == null) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Ionicons name='car-sport' size={48} color='#007AFF' />
+          <ActivityIndicator size='large' color='#007AFF' style={styles.loadingSpinner} />
+          <Text style={styles.loadingTitle}>Loading your ride</Text>
+          <Text style={styles.loadingSubtitle}>Please wait a moment...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
-			<View style={styles.mapContainer}>
-				<MapView style={styles.map} region={region}>
-					<Marker
-						coordinate={{
-							latitude: location?.coords?.latitude,
-							longitude: location?.coords?.longitude
-						}}
-						title='My Location'
-						description='This is where I am'
-					/>
-				</MapView>
-			</View>
-			<LocationTracker />
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.greeting}>
+          {user?.userType == 'driver' ? `Hello, ${user?.firstName}!` : `Welcome!`}
+        </Text>
+      </View>
 
-			{user?.userType === 'driver' && (
-				<View style={styles.actions}>
-					<TouchableOpacity style={styles.bookButton} onPress={() => router.push('/')}>
-						<Text style={styles.bookButtonText}>Book a Ride</Text>
-					</TouchableOpacity>
+      {user?.userType === 'rider' && (
+        <View style={styles.searchBarContainer}>
+          <TouchableOpacity
+            style={styles.searchBar}
+            onPress={() => router.push('/(app)/(tabs)/home/booking')}
+            activeOpacity={0.7}>
+            <Ionicons name='search' size={20} color='#8E8E93' style={styles.searchIcon} />
+            <Text style={styles.searchPlaceholder}>Where are you going?</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
-					<TouchableOpacity
-						style={styles.destinationButton}
-						onPress={() => router.push('/(app)/(tabs)/home/destination')}>
-						<Text style={styles.destinationButtonText}>Choose Destination</Text>
-					</TouchableOpacity>
-				</View>
-			)}
-		</SafeAreaView>
-	);
+      {/*CLUSTERED MAP */}
+      <View style={styles.mapContainer}>
+        <MapViewClustering
+          ref={mapRef}
+          style={styles.map}
+          clusterColor="#007AFF"
+          spiralEnabled
+          animationEnabled
+          region={region}
+          showsUserLocation
+          showsMyLocationButton
+          onRegionChangeComplete={(r) => console.log('Region changed:', r)}
+        >
+          {/* User’s marker */}
+          {location?.coords && (
+            <Marker
+              coordinate={{
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+              }}
+              title="My Location"
+              description="This is where I am"
+            />
+          )}
+
+          {/* Dynamic user markers (can come from Supabase) */}
+          {userMarkers.map((m) => (
+            <Marker
+              key={m.id}
+              coordinate={{
+                latitude: m.latitude,
+                longitude: m.longitude,
+              }}
+              title={m.name}
+            />
+          ))}
+        </MapViewClustering>
+
+        {/* 🔍 Zoom buttons */}
+        <View style={styles.zoomControls}>
+          <TouchableOpacity style={styles.zoomButton} onPress={() => handleZoom('in')}>
+            <Ionicons name="add" size={24} color="#fff" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.zoomButton} onPress={() => handleZoom('out')}>
+            <Ionicons name="remove" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <LocationTracker />
+
+      {user?.userType === 'driver' && (
+        <View style={styles.actions}>
+          <TouchableOpacity style={styles.bookButton} onPress={() => router.push('/')}>
+            <Text style={styles.bookButtonText}>Book a Ride</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.destinationButton}
+            onPress={() => router.push('/(app)/(tabs)/home/destination')}>
+            <Text style={styles.destinationButtonText}>Choose Destination</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </SafeAreaView>
+  );
 }
+
 
 const styles = StyleSheet.create({
 	container: {
