@@ -38,7 +38,7 @@ export default function ActivityScreen() {
   const renderTripItem = ({ item }: { item: typeof MOCK_TRIPS[0] }) => (
     <TouchableOpacity 
       style={styles.tripItem}
-      onPress={() => router.push(`/(tabs)/activity/trip-detail?id=${item.id}`)}
+      //onPress={() => router.push(`/(tabs)/activity/trip-detail?id=${item.id}`)}
     >
       <View style={styles.tripInfo}>
         <Text style={styles.tripRoute}>{item.from} → {item.to}</Text>

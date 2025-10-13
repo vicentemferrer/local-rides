@@ -1,6 +1,7 @@
 import { AuthProvider } from '@/hooks/useAuth';
 import { LocationProvider } from '@/src/core/context/LocationContext';
 import { Stack } from 'expo-router';
+import React from 'react';
 
 export default function RootLayout() {
 	return (

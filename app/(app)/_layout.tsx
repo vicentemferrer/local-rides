@@ -1,5 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Redirect, Slot } from 'expo-router';
+import React from 'react';
 
 export default function AppLayout() {
   const { isAuthenticated, isLoading } = useAuth();

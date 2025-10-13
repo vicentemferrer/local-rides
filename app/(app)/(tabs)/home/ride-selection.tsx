@@ -13,8 +13,6 @@ import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import { decodePolyline, getDirections, RouteInfo } from '@/src/core/location/directionsService';
 
-const { width, height } = Dimensions.get('window');
-
 export default function RideSelectionScreen() {
   const params = useLocalSearchParams();
   const mapRef = useRef<MapView>(null);
@@ -92,14 +90,6 @@ export default function RideSelectionScreen() {
   };
 
   const handleConfirmRide = () => {
-    // Navigate to payment or confirmation screen
-    // console.log('Ride confirmed:', {
-    //   origin,
-    //   destination,
-    //   routeInfo,
-    //   estimatedPrice: calculateEstimatedPrice(),
-    // });
-    
     // For now, go back to home
     router.push('/');
   };
