@@ -73,7 +73,7 @@ export default function HomeScreen() {
 
 					<TouchableOpacity
 						style={styles.destinationButton}
-						onPress={() => router.push('/(tabs)/home/destination')}>
+						onPress={() => router.push('/(app)/(tabs)/home/destination')}>
 						<Text style={styles.destinationButtonText}>Choose Destination</Text>
 					</TouchableOpacity>
 				</View>
